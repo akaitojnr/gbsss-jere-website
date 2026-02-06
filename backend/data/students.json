@@ -1,0 +1,222 @@
+[
+  {
+    "regNumber": "SCH/2026/001",
+    "password": "password123",
+    "name": "Ibrahim Musa",
+    "class": "SS3 A",
+    "results": [
+      {
+        "subject": "Mathematics",
+        "score": 85,
+        "grade": "A"
+      },
+      {
+        "subject": "English",
+        "score": 78,
+        "grade": "B2"
+      },
+      {
+        "subject": "Physics",
+        "score": 90,
+        "grade": "A"
+      }
+    ]
+  },
+  {
+    "regNumber": "SCH/2026/002",
+    "password": "pass",
+    "name": "Chidinma Okeke",
+    "class": "SS3 B",
+    "results": [
+      {
+        "subject": "Mathematics",
+        "score": 65,
+        "grade": "C4"
+      },
+      {
+        "subject": "English",
+        "score": 88,
+        "grade": "A"
+      },
+      {
+        "subject": "Biology",
+        "score": 72,
+        "grade": "B3"
+      }
+    ]
+  },
+  {
+    "regNumber": "101",
+    "password": "212121",
+    "name": "JOEL HASSAN",
+    "class": "SS3 A",
+    "results": [
+      {
+        "subject": "Mathematics",
+        "score": 85,
+        "grade": "A"
+      },
+      {
+        "subject": "English",
+        "score": 78,
+        "grade": "A"
+      },
+      {
+        "subject": "Physics",
+        "score": 90,
+        "grade": "A"
+      },
+      {
+        "subject": "Chemistry",
+        "score": 72,
+        "grade": "B2"
+      },
+      {
+        "subject": "Biology",
+        "score": 88,
+        "grade": "A"
+      },
+      {
+        "subject": "Agric",
+        "score": 75,
+        "grade": "A"
+      },
+      {
+        "subject": "Technical Drawing",
+        "score": 56,
+        "grade": "C5"
+      },
+      {
+        "subject": "Computer",
+        "score": 70,
+        "grade": "B2"
+      },
+      {
+        "subject": "Civic Education",
+        "score": 56,
+        "grade": "C5"
+      },
+      {
+        "subject": "Geography",
+        "score": 88,
+        "grade": "A"
+      }
+    ]
+  },
+  {
+    "regNumber": "102",
+    "password": "323232",
+    "name": "NUHU BULUS",
+    "class": "SS3 A",
+    "results": [
+      {
+        "subject": "Mathematics",
+        "score": 65,
+        "grade": "B3"
+      },
+      {
+        "subject": "English",
+        "score": 88,
+        "grade": "A"
+      },
+      {
+        "subject": "Physics",
+        "score": 75,
+        "grade": "A"
+      },
+      {
+        "subject": "Chemistry",
+        "score": 80,
+        "grade": "A"
+      },
+      {
+        "subject": "Biology",
+        "score": 70,
+        "grade": "B2"
+      },
+      {
+        "subject": "Agric",
+        "score": 82,
+        "grade": "A"
+      },
+      {
+        "subject": "Technical Drawing",
+        "score": 45,
+        "grade": "D7"
+      },
+      {
+        "subject": "Computer",
+        "score": 56,
+        "grade": "C5"
+      },
+      {
+        "subject": "Civic Education",
+        "score": 67,
+        "grade": "B3"
+      },
+      {
+        "subject": "Geography",
+        "score": 76,
+        "grade": "A"
+      }
+    ]
+  },
+  {
+    "regNumber": "103",
+    "password": "434343",
+    "name": "MUHAMMAD AUWAL",
+    "class": "SS3 A",
+    "results": [
+      {
+        "subject": "Mathematics",
+        "score": 92,
+        "grade": "A"
+      },
+      {
+        "subject": "English",
+        "score": 85,
+        "grade": "A"
+      },
+      {
+        "subject": "Physics",
+        "score": 78,
+        "grade": "A"
+      },
+      {
+        "subject": "Chemistry",
+        "score": 88,
+        "grade": "A"
+      },
+      {
+        "subject": "Biology",
+        "score": 90,
+        "grade": "A"
+      },
+      {
+        "subject": "Agric",
+        "score": 86,
+        "grade": "A"
+      },
+      {
+        "subject": "Technical Drawing",
+        "score": 67,
+        "grade": "B3"
+      },
+      {
+        "subject": "Computer",
+        "score": 54,
+        "grade": "C6"
+      },
+      {
+        "subject": "Civic Education",
+        "score": 34,
+        "grade": "F9"
+      },
+      {
+        "subject": "Geography",
+        "score": 67,
+        "grade": "B3"
+      }
+    ]
+  }
+]

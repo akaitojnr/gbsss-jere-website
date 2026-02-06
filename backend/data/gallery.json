@@ -1,0 +1,32 @@
+[
+  {
+    "id": 9,
+    "title": "Chemistry lab",
+    "url": "http://localhost:3000/uploads/1770060266034.jpg"
+  },
+  {
+    "id": 10,
+    "title": "Physics Lab.",
+    "url": "http://localhost:3000/uploads/1770060762534.jpg"
+  },
+  {
+    "id": 11,
+    "title": "Computer Lab. ",
+    "url": "http://localhost:3000/uploads/1770136403836.jpg"
+  },
+  {
+    "id": 12,
+    "title": "Digital Class",
+    "url": "http://localhost:3000/uploads/1770147094909.jpg"
+  },
+  {
+    "id": 13,
+    "title": "Hostel",
+    "url": "http://localhost:3000/uploads/1770322975143.jpg"
+  },
+  {
+    "id": 14,
+    "title": "Football Field",
+    "url": "http://localhost:3000/uploads/1770323663614.jpg"
+  }
+]

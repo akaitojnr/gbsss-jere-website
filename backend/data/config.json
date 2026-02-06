@@ -1,0 +1,139 @@
+{
+  "name": "GOVERNMENT BOYS' SCIENCE SECONDARY SCHOOL, JERE",
+  "fullName": "Government Boys Science Secondary School Jere",
+  "motto": "The creative minds",
+  "principal": {
+    "name": "Mr Wuddivira Nakka Hussaini",
+    "welcomeTitle": "From the Principal's Desk",
+    "welcomeMessage": "\"Welcome to our great citadel of learning. At GBSSS JERE, we are committed to raising total children who are academically sound and morally upright. Our curriculum is robust, blending the Nigerian requirement with global best practices.\""
+  },
+  "contact": {
+    "address": "Along Jere-Kagarko road, Jere, Kagarko LGA, Kaduna State, Nigeria",
+    "email": "gbsssjereutme@gmail.com",
+    "phone": "+234 7032562968",
+    "hours": "Mon - Fri, 8am - 4pm"
+  },
+  "establishmentYear": 2024,
+  "vision": "To be a model school for academic excellence and character development in Nigeria.",
+  "mission": "Providing quality education through dedicated teaching, discipline, and a conducive learning environment.",
+  "historyDate": 2024,
+  "historyDescription": "Government Boys Science Secondary School, Jere, is a landmark educational institution in Kaduna State, Nigeria. The school was officially commissioned on 29th May 2024 by the Executive Governor of Kaduna State, Senator Uba Sani.  \n\nIts establishment was part of a broader initiative supported by the Islamic Development Bank (IsDB), aimed at improving access to quality science and technology education in the region. The project reflects Kaduna State’s commitment to strengthening secondary education, particularly in the sciences, to prepare young students for future opportunities in higher education and professional careers.  \n\nThe commissioning of the school marked a significant milestone in the state’s educational development agenda, symbolizing both international collaboration and local government dedication to human capital development. Today, Government Boys Science Secondary School, Jere, stands as a beacon of learning, designed to nurture future scientists, innovators, and leaders from the community.  ",
+  "coreValues": [
+    {
+      "title": "Discipline",
+      "desc": "We believe character is as important as learning."
+    },
+    {
+      "title": "Excellence",
+      "desc": "We strive for the best in all endeavors."
+    },
+    {
+      "title": "Integrity",
+      "desc": "Honesty and transparency are our watchwords."
+    },
+    {
+      "title": "Hard Work",
+      "desc": "Success is 99% perspiration."
+    }
+  ],
+  "socials": {
+    "facebook": "https://facebook.com/gbsss",
+    "twitter": "https://twitter.com/gdss",
+    "instagram": "https://instagram.com/gbsss"
+  },
+  "academics": {
+    "sss": {
+      "science": [
+        "Physics",
+        "Chemistry",
+        "Biology",
+        "Further Maths",
+        "Agricultural Science",
+        "Geography",
+        "Technical Drawing",
+        "Digital Technology",
+        "General Mathematics",
+        "English Language"
+      ]
+    },
+    "calendar": [
+      {
+        "term": "1st Term",
+        "start": "Sept 9, 2025",
+        "end": "Dec 12th, 2025",
+        "activity": "Inter-house quiz and Debate Competition"
+      },
+      {
+        "term": "2nd Term",
+        "start": "Jan 4th, 2026",
+        "end": "Mar 18, 2026",
+        "activity": "Inter-house Sport"
+      },
+      {
+        "term": "3rd Term",
+        "start": "Apr 12th, 2026",
+        "end": "July 24th, 2026",
+        "activity": "Promotion Exams"
+      }
+    ]
+  },
+  "management": {
+    "vicePrincipals": [
+      {
+        "name": "Mr. Bala Awu ",
+        "role": "Vice Principal (Academic)",
+        "initials": "FO"
+      },
+      {
+        "name": "Mrs. Comfort Clifford",
+        "role": "Vice Principal (Admin)",
+        "initials": "IA"
+      }
+    ]
+  },
+  "admissions": {
+    "formPrice": "",
+    "requirements": {
+      "sss1": [
+        "BECE / Junior WAEC Result",
+        "Transfer Certificate (if applicable)",
+        "2 Passport Photographs",
+        "Birth Certificate",
+        "National Identity Number (NIN) "
+      ]
+    },
+    "procedure": [
+      "Download the admission form from the link below",
+      "Fill the form and attach required documents.",
+      "Submit to the Vice Principal (Admin) for processing.",
+      "Wait for the entrance examination date communicating via SMS. Only Processed forms will be contacted"
+    ]
+  },
+  "images": {
+    "logo": "/images/logo.png.jpg",
+    "hero": "http://localhost:3000/uploads/1770135435346.jpg",
+    "principal": "http://localhost:3000/uploads/1770321203073.png",
+    "heroSlider": [
+      {
+        "url": "http://localhost:3000/uploads/1770135435346.jpg",
+        "caption": "Welcome to our Citadel of Learning"
+      },
+      {
+        "url": "http://localhost:3000/uploads/1770148383543.jpg",
+        "caption": "Shaping the Creative Minds"
+      },
+      {
+        "url": "http://localhost:3000/uploads/1770148993572.jpg",
+        "caption": "Excellence in Science and Technology"
+      },
+      {
+        "url": "http://localhost:3000/uploads/1770322035909.jpg",
+        "caption": "Equipping Students with 21st-Century Digital Skills"
+      },
+      {
+        "url": "http://localhost:3000/uploads/1770323929514.jpg",
+        "caption": "Developing Talent, Building Character"
+      }
+    ]
+  }
+}

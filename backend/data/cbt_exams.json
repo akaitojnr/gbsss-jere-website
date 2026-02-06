@@ -1,0 +1,212 @@
+[
+  {
+    "id": 1,
+    "title": "EXAMINATION",
+    "subject": "CHEMISTRY",
+    "class": "SS3 A",
+    "timeLimit": 30,
+    "questions": [
+      {
+        "question": "Chemistry is best defined as the study of __________",
+        "options": [
+          "living things",
+          " composition, properties, and changes of matter",
+          " outer space ",
+          "body structures"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "Which of the following is not a branch of chemistry?",
+        "options": [
+          " Organic chemistry",
+          " Analytical chemistry",
+          " Biochemistry",
+          " Geography"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The apparatus used to heat substances to very high temperatures is __________.",
+        "options": [
+          " Beaker",
+          " Crucible",
+          " Conical flask",
+          " Test tube"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The apparatus used to measure accurate volumes of liquids is __________.",
+        "options": [
+          " Burette",
+          " Evaporating dish",
+          " Mortar and pestle",
+          " Test tube"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "Wearing goggles in the laboratory is an example of __________.",
+        "options": [
+          " Good laboratory practice",
+          " Unsafe practice",
+          " Optional rule",
+          " Irrelevant"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The central part of an atom is called?",
+        "options": [
+          " Electron",
+          " Neutron",
+          " Proton",
+          " Nucleus"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "Which of the following is a property of gases?",
+        "options": [
+          " Fixed volume",
+          " Definite shape",
+          " Easily compressed",
+          " Rigid structure"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "A substance made of two or more elements chemically combined in fixed proportions is a",
+        "options": [
+          " Mixture",
+          " Compound",
+          " Element",
+          " Solution"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "Which of these is a compound?",
+        "options": [
+          " O₂",
+          " Fe",
+          " H₂O",
+          " N₂"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "Which of these is a mixture?",
+        "options": [
+          " NaCl",
+          " CO₂",
+          " Air",
+          " H₂O"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The technique used to separate insoluble solids from liquids is __________.",
+        "options": [
+          " Filtration",
+          " Distillation",
+          " Evaporation",
+          " Chromatography"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "Salt (NaCl) can be separated from water (H₂O) by __________.",
+        "options": [
+          " Evaporation",
+          " Filtration",
+          " Simple distillation",
+          " Crystallization"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The empirical formula of a compound is the .................",
+        "options": [
+          " Smallest ratio of atoms of atoms of each element",
+          " Actual number of atoms in a molecule",
+          " Number of moles in 1g",
+          " Atomic mass"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "Dalton’s atomic theory states that atoms of the same element are __________.",
+        "options": [
+          " Different in mass",
+          " Identical in all properties",
+          " Destroyable",
+          " Radioactive"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The nucleus of an atom contains __________.",
+        "options": [
+          " Electrons only",
+          " Protons and neutrons",
+          " Neutrons only",
+          " Protons only"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The number of neutrons in an atom is calculated using:",
+        "options": [
+          " Mass number – Atomic number",
+          " Mass number + Atomic number",
+          " Proton number – Electron number",
+          " Electron number – Neutron number"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The molecular formula of glucose is C₆H₁₂O₆. Its empirical formula is:",
+        "options": [
+          " C₆H₁₂O₆",
+          " CH₂O",
+          " C₂H₄O₂",
+          " CHO"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "A molecule has a molecular mass of 180 g/mol and an empirical formula CH₂O. Its molecular formula is __________.",
+        "options": [
+          " CH₂O",
+          " C₆H₁₂O₆",
+          " C₂H₄O₂",
+          " C₃H₆O₃"
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The mass number of an atom = 23; atomic number = 11. The number of neutrons is:",
+        "options": [
+          11,
+          12,
+          23,
+          34
+        ],
+        "correct": 0
+      },
+      {
+        "question": "The number of protons in aluminum (Al) is",
+        "options": [
+          13,
+          14,
+          27,
+          40
+        ],
+        "correct": 0
+      }
+    ],
+    "createdAt": "2026-02-05T19:15:10.830Z"
+  }
+]
