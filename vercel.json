@@ -20,8 +20,12 @@
             "destination": "/api/serverless.js"
         },
         {
-            "source": "/(.*)",
-            "destination": "/frontend/$1"
+            "source": "/assets/(.*)",
+            "destination": "/frontend/assets/$1"
+        },
+        {
+            "source": "/((?!api/).*)",
+            "destination": "/frontend/index.html"
         }
     ]
 }
