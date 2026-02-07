@@ -19,6 +19,10 @@
             "dest": "/api/serverless.js"
         },
         {
+            "src": "/uploads/(.*)",
+            "dest": "/backend/uploads/$1"
+        },
+        {
             "src": "/assets/(.*)",
             "dest": "/frontend/assets/$1"
         },

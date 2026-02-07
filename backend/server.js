@@ -11,6 +11,8 @@ const XLSX = require('xlsx');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 // Models
 const Student = require('./models/Student');
@@ -69,29 +71,26 @@ app.get('/api/db-status', (req, res) => {
 // Routes
 
 // Configure Multer
-// Configure Multer
-// Ensure uploads directory exists (use /tmp for serverless if needed, but ephemeral)
-const uploadDir = path.join(__dirname, 'uploads');
-try {
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir);
-    }
-} catch (err) {
-    console.warn("Could not create upload directory (likely read-only fs):", err.message);
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // On Vercel, we might need to use /tmp, but files won't persist. 
-        // For now, try uploads, fallback to /tmp if it fails?
-        // Actually, just let it try; if it fails, upload fails, but server works.
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// Configure Cloudinary Storage for Multer
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'school-gallery',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'gif'],
+    },
+});
+
 const upload = multer({ storage });
+
+// Local storage fallback for existing routes if needed (though we'll prefer Cloudinary now)
+const localUploadDir = path.join(__dirname, 'uploads');
 
 // Routes
 
@@ -106,7 +105,7 @@ app.get('/api/gallery', async (req, res) => {
     }
 });
 
-// Add to Gallery
+// Add to Gallery (Now using Cloudinary)
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
     const { title } = req.body;
     const file = req.file;
@@ -116,17 +115,18 @@ app.post('/api/gallery', upload.single('image'), async (req, res) => {
     }
 
     try {
-        // Simple numeric ID for compatibility, though unnecessary with Mongo
         const count = await Gallery.countDocuments();
         const newImage = new Gallery({
             id: count + 1,
             title,
-            url: `/uploads/${file.filename}`
+            url: file.path, // Cloudinary provides the full URL in file.path
+            public_id: file.filename // Cloudinary provides the public_id in file.filename
         });
         await newImage.save();
         res.json({ success: true, image: newImage });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Failed to save image' });
+        console.error("Gallery Save Error:", err);
+        res.status(500).json({ success: false, message: 'Failed to save image: ' + err.message });
     }
 });
 
@@ -141,9 +141,18 @@ app.delete('/api/gallery/:id', async (req, res) => {
 
         if (!image) return res.status(404).json({ success: false, message: 'Image not found' });
 
+        // Delete from Cloudinary if it has a public_id
+        if (image.public_id) {
+            try {
+                await cloudinary.uploader.destroy(image.public_id);
+            } catch (cloudErr) {
+                console.warn("Cloudinary Deletion Error (non-fatal):", cloudErr.message);
+            }
+        }
+
         await Gallery.deleteOne({ _id: image._id });
 
-        // Delete file
+        // Delete local file if it exists (legacy support)
         if (image.url.includes('/uploads/')) {
             const filename = image.url.split('/uploads/').pop();
             const filePath = path.join(__dirname, 'uploads', filename);
