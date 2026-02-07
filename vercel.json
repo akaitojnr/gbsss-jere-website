@@ -13,23 +13,15 @@
             "use": "@vercel/node"
         }
     ],
-    "routes": [
+    "cleanUrls": true,
+    "rewrites": [
         {
-            "src": "/api/(.*)",
-            "dest": "/api/serverless.js"
+            "source": "/api/(.*)",
+            "destination": "/api/serverless.js"
         },
         {
-            "src": "/assets/(.*)",
-            "dest": "/frontend/assets/$1"
-        },
-        {
-            "src": "/((?!api/).*)",
-            "dest": "/frontend/$1",
-            "continue": true
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/frontend/index.html"
+            "source": "/(.*)",
+            "destination": "/frontend/$1"
         }
     ]
 }
