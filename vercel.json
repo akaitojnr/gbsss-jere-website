@@ -19,8 +19,8 @@
             "destination": "/api/serverless.js"
         },
         {
-            "source": "/(.*)",
-            "destination": "/$1"
+            "source": "/((?!api/).*)",
+            "destination": "/index.html"
         }
     ]
 }

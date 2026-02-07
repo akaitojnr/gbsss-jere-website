@@ -49,6 +49,23 @@ app.get('/api/ping', (req, res) => {
     res.json({ success: true, message: 'pong', time: new Date().toISOString() });
 });
 
+// DB Status check
+app.get('/api/db-status', (req, res) => {
+    const state = mongoose.connection.readyState;
+    const states = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+    };
+    res.json({
+        success: true,
+        state: states[state] || 'unknown',
+        uri_configured: !!process.env.MONGO_URI,
+        uri_masked: process.env.MONGO_URI ? process.env.MONGO_URI.replace(/:([^@]+)@/, ':****@') : 'not set'
+    });
+});
+
 // Routes
 
 // Configure Multer
