@@ -4,18 +4,36 @@ import { API_BASE_URL } from '../config';
 const ConfigContext = createContext();
 
 const initialConfig = {
-    name: "",
-    fullName: "",
-    motto: "",
-    principal: { name: "", welcomeTitle: "", welcomeMessage: "" },
-    contact: { address: "", email: "", phone: "", hours: "" },
-    images: { logo: "", hero: "", principal: "" },
-    vision: "",
-    mission: "",
-    coreValues: [],
-    academics: { sss: { science: [] }, calendar: [] },
+    name: "Government Boys Science Secondary School Jere",
+    fullName: "Government Boys Science Secondary School Jere",
+    motto: "The creative minds",
+    principal: {
+        name: "Mr Wuddivira Nakka Hussaini",
+        welcomeTitle: "From the Principal's Desk",
+        welcomeMessage: "Welcome to our great citadel of learning."
+    },
+    contact: {
+        address: "Along Jere-Kagarko road, Jere, Kagarko LGA, Kaduna State, Nigeria",
+        email: "info@gbsss.edu.ng",
+        phone: "+234 7032562968",
+        hours: "Mon - Fri, 8am - 4pm"
+    },
+    images: {
+        logo: "/images/logo.png",
+        hero: "/images/hero.jpg",
+        principal: "/images/principal.png"
+    },
+    vision: "To be a model school for academic excellence and character development in Nigeria.",
+    mission: "Providing quality education through dedicated teaching, discipline, and a conducive learning environment.",
+    coreValues: [
+        { title: "Discipline", desc: "We believe character is as important as learning." },
+        { title: "Excellence", desc: "We strive for the best in all endeavors." },
+        { title: "Integrity", desc: "Honesty and transparency are our watchwords." },
+        { title: "Hard Work", desc: "Success is 99% perspiration." }
+    ],
+    academics: { sss: { science: ["Physics", "Chemistry", "Biology", "Further Maths"] }, calendar: [] },
     management: { vicePrincipals: [] },
-    admissions: { formPrice: "", requirements: { sss1: [] }, procedure: [] }
+    admissions: { formPrice: "₦2,000", requirements: { sss1: [] }, procedure: [] }
 };
 
 export const ConfigProvider = ({ children }) => {
@@ -25,7 +43,7 @@ export const ConfigProvider = ({ children }) => {
 
     const fetchConfig = async () => {
         try {
-            const res = await fetch('${API_BASE_URL}/api/config');
+            const res = await fetch(`${API_BASE_URL}/api/config`);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
             setConfig(data);
@@ -40,7 +58,7 @@ export const ConfigProvider = ({ children }) => {
 
     const updateConfig = async (newConfig) => {
         try {
-            const res = await fetch('${API_BASE_URL}/api/config', {
+            const res = await fetch(`${API_BASE_URL}/api/config`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newConfig)

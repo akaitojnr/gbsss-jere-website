@@ -77,35 +77,35 @@ const Admin = () => {
     }, [config]);
 
     const fetchGallery = () => {
-        fetch('${API_BASE_URL}/api/gallery')
+        fetch(`${API_BASE_URL}/api/gallery`)
             .then(res => res.json())
             .then(data => setGallery(data))
             .catch(err => console.error("Error fetching gallery:", err));
     };
 
     const fetchNews = () => {
-        fetch('${API_BASE_URL}/api/news')
+        fetch(`${API_BASE_URL}/api/news`)
             .then(res => res.json())
             .then(data => setNews(data))
             .catch(err => console.error("Error fetching news:", err));
     };
 
     const fetchStudents = () => {
-        fetch('${API_BASE_URL}/api/students')
+        fetch(`${API_BASE_URL}/api/students`)
             .then(res => res.json())
             .then(data => setStudents(data))
             .catch(err => console.error("Error fetching students:", err));
     };
 
     const fetchAssignments = () => {
-        fetch('${API_BASE_URL}/api/assignments')
+        fetch(`${API_BASE_URL}/api/assignments`)
             .then(res => res.json())
             .then(data => setAssignments(data))
             .catch(err => console.error("Error fetching assignments:", err));
     };
 
     const fetchExams = () => {
-        fetch('${API_BASE_URL}/api/cbt')
+        fetch(`${API_BASE_URL}/api/cbt`)
             .then(res => res.json())
             .then(data => setExams(data))
             .catch(err => console.error("Error fetching exams:", err));
@@ -113,7 +113,7 @@ const Admin = () => {
 
     const fetchContacts = async () => {
         try {
-            const res = await fetch('${API_BASE_URL}/api/contacts');
+            const res = await fetch(`${API_BASE_URL}/api/contacts`);
             const data = await res.json();
             setContacts(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -195,7 +195,7 @@ const Admin = () => {
         formData.append('image', image);
 
         try {
-            const res = await fetch('${API_BASE_URL}/api/gallery', {
+            const res = await fetch(`${API_BASE_URL}/api/gallery`, {
                 method: 'POST',
                 body: formData
             });
@@ -240,7 +240,7 @@ const Admin = () => {
         try {
             const url = editingNews
                 ? `${API_BASE_URL}/api/news/${newsForm.id}`
-                : '${API_BASE_URL}/api/news';
+                : `${API_BASE_URL}/api/news`;
 
             const method = editingNews ? 'PUT' : 'POST';
 
@@ -343,7 +343,7 @@ const Admin = () => {
         formData.append('image', file);
 
         try {
-            const res = await fetch('${API_BASE_URL}/api/upload', {
+            const res = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 body: formData
             });
@@ -372,7 +372,7 @@ const Admin = () => {
         formData.append('image', file);
 
         try {
-            const res = await fetch('${API_BASE_URL}/api/upload', {
+            const res = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 body: formData
             });
@@ -435,7 +435,7 @@ const Admin = () => {
         e.preventDefault();
         setAssignmentStatus('Saving...');
         try {
-            const res = await fetch('${API_BASE_URL}/api/assignments', {
+            const res = await fetch(`${API_BASE_URL}/api/assignments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(assignmentForm)
@@ -468,7 +468,7 @@ const Admin = () => {
         e.preventDefault();
         setExamStatus('Saving...');
         try {
-            const res = await fetch('${API_BASE_URL}/api/cbt', {
+            const res = await fetch(`${API_BASE_URL}/api/cbt`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(examForm)
@@ -536,7 +536,7 @@ const Admin = () => {
         setImportQStatus('Importing...');
 
         try {
-            const res = await fetch('${API_BASE_URL}/api/import-questions', {
+            const res = await fetch(`${API_BASE_URL}/api/import-questions`, {
                 method: 'POST',
                 body: formData
             });

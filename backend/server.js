@@ -1,9 +1,9 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
-const path = require('path');
 const XLSX = require('xlsx');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
@@ -33,16 +33,27 @@ mongoose.connect(MONGO_URI)
 
 app.use(cors());
 app.use(bodyParser.json());
+// Serve uploads - important for Vercel to route correctly if filesystem is used transiently or for static assets in repo
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Configure Multer
+// Configure Multer
+// Ensure uploads directory exists (use /tmp for serverless if needed, but ephemeral)
+const uploadDir = path.join(__dirname, 'uploads');
+try {
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir);
+    }
+} catch (err) {
+    console.warn("Could not create upload directory (likely read-only fs):", err.message);
+}
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, 'uploads');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
-        }
-        cb(null, 'uploads/');
+        // On Vercel, we might need to use /tmp, but files won't persist. 
+        // For now, try uploads, fallback to /tmp if it fails?
+        // Actually, just let it try; if it fails, upload fails, but server works.
+        cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
@@ -556,3 +567,5 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+module.exports = app;
