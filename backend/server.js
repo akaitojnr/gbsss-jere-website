@@ -1,5 +1,8 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+// Only load .env file if MONGO_URI is not already set (for local development)
+if (!process.env.MONGO_URI) {
+    require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+}
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -23,13 +26,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/school_db';
 
-// Connect to MongoDB
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => {
-        console.error('MongoDB connection error:', err);
-        console.log('Ensure MongoDB is installed and running!');
-    });
+// Connect to MongoDB (with connection pooling for serverless)
+if (mongoose.connection.readyState === 0) {
+    mongoose.connect(MONGO_URI, {
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+    })
+        .then(() => console.log('Connected to MongoDB'))
+        .catch(err => {
+            console.error('MongoDB connection error:', err);
+            console.log('Ensure MongoDB URI is set in environment variables!');
+        });
+}
 
 app.use(cors());
 app.use(bodyParser.json());
