@@ -19,8 +19,12 @@
             "destination": "/api/serverless.js"
         },
         {
-            "source": "/((?!api/).*)",
-            "destination": "/index.html"
+            "source": "/(.*)",
+            "destination": "/frontend/$1"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/frontend/index.html"
         }
     ]
 }

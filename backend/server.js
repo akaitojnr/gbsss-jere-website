@@ -121,7 +121,7 @@ app.post('/api/gallery', upload.single('image'), async (req, res) => {
         const newImage = new Gallery({
             id: count + 1,
             title,
-            url: `http://localhost:${PORT}/uploads/${file.filename}` // Ideally use relative path or configured base URL
+            url: `/uploads/${file.filename}`
         });
         await newImage.save();
         res.json({ success: true, image: newImage });
