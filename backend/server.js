@@ -84,7 +84,8 @@ app.get('/api/gallery', async (req, res) => {
         const gallery = await Gallery.find().sort({ createdAt: -1 });
         res.json(gallery);
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Server Error' });
+        console.error("Gallery Fetch Error:", err);
+        res.status(500).json({ success: false, message: err.message, stack: err.stack });
     }
 });
 
