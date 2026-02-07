@@ -14,22 +14,23 @@
         }
     ],
     "cleanUrls": true,
-    "rewrites": [
+    "routes": [
         {
-            "source": "/api/(.*)",
-            "destination": "/api/serverless.js"
+            "src": "/api/(.*)",
+            "dest": "/api/serverless.js"
         },
         {
-            "source": "/assets/(.*)",
-            "destination": "/frontend/assets/$1"
+            "src": "/assets/(.*)",
+            "dest": "/frontend/assets/$1"
         },
         {
-            "source": "/",
-            "destination": "/frontend/index.html"
+            "src": "/(.*)",
+            "dest": "/frontend/$1",
+            "continue": true
         },
         {
-            "source": "/((?!api/).*)",
-            "destination": "/frontend/index.html"
+            "src": "/(.*)",
+            "dest": "/frontend/index.html"
         }
     ]
 }
