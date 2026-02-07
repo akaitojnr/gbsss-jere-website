@@ -44,6 +44,13 @@ app.use(bodyParser.json());
 // Serve uploads - important for Vercel to route correctly if filesystem is used transiently or for static assets in repo
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Health check endpoint
+app.get('/api/ping', (req, res) => {
+    res.json({ success: true, message: 'pong', time: new Date().toISOString() });
+});
+
+// Routes
+
 // Configure Multer
 // Configure Multer
 // Ensure uploads directory exists (use /tmp for serverless if needed, but ephemeral)
