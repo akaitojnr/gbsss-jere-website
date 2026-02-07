@@ -19,8 +19,16 @@
             "dest": "/api/serverless.js"
         },
         {
+            "src": "/assets/(.*)",
+            "dest": "/frontend/dist/assets/$1"
+        },
+        {
+            "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|json))",
+            "dest": "/frontend/dist/$1"
+        },
+        {
             "src": "/(.*)",
-            "dest": "/frontend/$1"
+            "dest": "/frontend/dist/index.html"
         }
     ]
 }
