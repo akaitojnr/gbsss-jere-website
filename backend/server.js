@@ -263,14 +263,15 @@ app.delete('/api/news/:id', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     const { regNumber, password } = req.body;
     try {
-        const student = await Student.findOne({ regNumber, password });
-        if (student) {
-            const { password, ...studentData } = student.toObject();
+        const student = await Student.findOne({ regNumber });
+        if (student && await student.comparePassword(password)) {
+            const { password: _, ...studentData } = student.toObject();
             res.json({ success: true, student: studentData });
         } else {
             res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
     } catch (err) {
+        console.error('Login error:', err);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
@@ -387,12 +388,17 @@ app.post('/api/import-results', upload.single('csv'), async (req, res) => {
                 }
             }
 
-            // Upsert student
-            await Student.findOneAndUpdate(
-                { regNumber },
-                { $set: { password, name, class: studentClass, results } },
-                { upsert: true, new: true }
-            );
+            // Upsert student with save() to trigger pre-save hashing hook
+            let student = await Student.findOne({ regNumber });
+            if (student) {
+                student.password = password;
+                student.name = name;
+                student.class = studentClass;
+                student.results = results;
+            } else {
+                student = new Student({ regNumber, password, name, class: studentClass, results });
+            }
+            await student.save();
             importedCount++;
         }
 
