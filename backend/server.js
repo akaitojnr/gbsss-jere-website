@@ -51,6 +51,31 @@ app.get('/api/ping', (req, res) => {
     res.json({ success: true, message: 'pong', time: new Date().toISOString() });
 });
 
+// Cloudinary Diagnostic Route
+app.get('/api/cloudinary-test', async (req, res) => {
+    try {
+        const result = await cloudinary.api.ping();
+        res.json({
+            success: true,
+            message: "Cloudinary is correctly configured!",
+            result,
+            config: {
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'MISSING',
+                api_key: process.env.CLOUDINARY_API_KEY ? 'SET' : 'MISSING',
+                api_secret: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'MISSING'
+            }
+        });
+    } catch (err) {
+        console.error("Cloudinary Test Error:", err);
+        res.status(500).json({
+            success: false,
+            message: "Cloudinary configuration error: " + err.message,
+            error: err,
+            details: "Check that your CLOUDINARY_API_SECRET and other keys in Vercel match exactly what is in your Cloudinary Dashboard."
+        });
+    }
+});
+
 // DB Status check
 app.get('/api/db-status', (req, res) => {
     const state = mongoose.connection.readyState;
