@@ -281,7 +281,7 @@ app.post('/api/login', async (req, res) => {
     const { regNumber, password } = req.body;
     try {
         const student = await Student.findOne({ regNumber });
-        if (student && await student.comparePassword(password)) {
+        if (student && student.password === password) {
             const { password: _, ...studentData } = student.toObject();
             res.json({ success: true, student: studentData });
         } else {
@@ -405,17 +405,12 @@ app.post('/api/import-results', upload.single('csv'), async (req, res) => {
                 }
             }
 
-            // Upsert student with save() to trigger pre-save hashing hook
-            let student = await Student.findOne({ regNumber });
-            if (student) {
-                student.password = password;
-                student.name = name;
-                student.class = studentClass;
-                student.results = results;
-            } else {
-                student = new Student({ regNumber, password, name, class: studentClass, results });
-            }
-            await student.save();
+            // Upsert student
+            await Student.findOneAndUpdate(
+                { regNumber },
+                { password, name, class: studentClass, results },
+                { upsert: true, new: true }
+            );
             importedCount++;
         }
 
