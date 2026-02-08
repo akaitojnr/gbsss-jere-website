@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useConfig } from '../context/ConfigContext';
+import { getImageUrl } from '../config';
 
 const Header = () => {
     const { config, loading } = useConfig();
@@ -34,7 +35,7 @@ const Header = () => {
             <div className="container" style={styles.container}>
                 <div style={styles.logo}>
                     <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        {schoolConfig.images.logo && <img src={schoolConfig.images.logo} alt="Logo" style={{ height: '80px' }} />}
+                        {schoolConfig.images.logo && <img src={getImageUrl(schoolConfig.images.logo)} alt="Logo" style={{ height: '80px' }} />}
                         <h1>{schoolConfig.name}</h1>
                     </Link>
                 </div>

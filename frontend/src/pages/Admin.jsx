@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useConfig } from '../context/ConfigContext';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, getImageUrl } from '../config';
 
 const Admin = () => {
     const { config, loading, updateConfig, refreshConfig } = useConfig();
@@ -669,7 +669,7 @@ const Admin = () => {
                             <div style={styles.list}>
                                 {gallery.map(img => (
                                     <div key={img.id} style={styles.listItem}>
-                                        <img src={img.url} alt={img.title} style={styles.listThumb} />
+                                        <img src={getImageUrl(img.url)} alt={img.title} style={styles.listThumb} />
                                         <div style={{ flex: 1 }}>
                                             <h4 style={{ margin: '0 0 5px' }}>{img.title}</h4>
                                         </div>
@@ -729,7 +729,7 @@ const Admin = () => {
                             <label style={styles.label}>School Logo</label>
                             {settings.images.logo && (
                                 <div style={{ marginBottom: '10px' }}>
-                                    <img src={settings.images.logo} alt="Logo" style={{ maxWidth: '150px', height: 'auto', borderRadius: '8px' }} />
+                                    <img src={getImageUrl(settings.images.logo)} alt="Logo" style={{ maxWidth: '150px', height: 'auto', borderRadius: '8px' }} />
                                 </div>
                             )}
                             <input
@@ -746,7 +746,7 @@ const Admin = () => {
                             <label style={styles.label}>Hero Banner Image</label>
                             {settings.images.hero && (
                                 <div style={{ marginBottom: '10px' }}>
-                                    <img src={settings.images.hero} alt="Hero" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }} />
+                                    <img src={getImageUrl(settings.images.hero)} alt="Hero" style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }} />
                                 </div>
                             )}
                             <input
@@ -763,7 +763,7 @@ const Admin = () => {
                             <label style={styles.label}>Principal's Photo</label>
                             {settings.images.principal && (
                                 <div style={{ marginBottom: '10px' }}>
-                                    <img src={settings.images.principal} alt="Principal" style={{ maxWidth: '200px', height: 'auto', borderRadius: '8px' }} />
+                                    <img src={getImageUrl(settings.images.principal)} alt="Principal" style={{ maxWidth: '200px', height: 'auto', borderRadius: '8px' }} />
                                 </div>
                             )}
                             <input
@@ -783,7 +783,7 @@ const Admin = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                             {settings.images.heroSlider && settings.images.heroSlider.map((slide, idx) => (
                                 <div key={idx} style={{ padding: '15px', border: '1px solid #ddd', borderRadius: '8px', position: 'relative' }}>
-                                    <img src={slide.url} alt="Slide" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px', marginBottom: '10px' }} />
+                                    <img src={getImageUrl(slide.url)} alt="Slide" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px', marginBottom: '10px' }} />
                                     <input
                                         type="text"
                                         placeholder="Caption"

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, getImageUrl } from '../config';
 
 const Gallery = () => {
     const [images, setImages] = useState([]);
@@ -29,7 +29,7 @@ const Gallery = () => {
                     {images.length > 0 ? (
                         images.map(img => (
                             <div key={img.id} style={styles.card}>
-                                <img src={img.url} alt={img.title} style={styles.img} />
+                                <img src={getImageUrl(img.url)} alt={img.title} style={styles.img} />
                                 <div style={styles.caption}>{img.title}</div>
                             </div>
                         ))

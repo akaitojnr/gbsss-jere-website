@@ -95,32 +95,46 @@ app.get('/api/db-status', (req, res) => {
 
 // Routes
 
-// Configure Multer
 // Configure Cloudinary
-console.log('--- CLOUDINARY CONFIG CHECK ---');
-console.log('CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'MISSING');
-console.log('API_KEY:', process.env.CLOUDINARY_API_KEY ? 'SET' : 'MISSING');
-console.log('API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'SET' : 'MISSING');
+const isCloudinaryConfigured =
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET;
 
-cloudinary.config({
-    cloud_name: (process.env.CLOUDINARY_CLOUD_NAME || "").trim(),
-    api_key: (process.env.CLOUDINARY_API_KEY || "").trim(),
-    api_secret: (process.env.CLOUDINARY_API_SECRET || "").trim()
-});
+if (isCloudinaryConfigured) {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME.trim(),
+        api_key: process.env.CLOUDINARY_API_KEY.trim(),
+        api_secret: process.env.CLOUDINARY_API_SECRET.trim()
+    });
+}
 
-// Configure Cloudinary Storage for Multer
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'school-gallery',
-        allowed_formats: ['jpg', 'png', 'jpeg', 'gif'],
-    },
-});
+// Configure Storage (Cloudinary or Local Fallback)
+let storage;
+if (isCloudinaryConfigured) {
+    console.log('✅ Using Cloudinary Storage');
+    storage = new CloudinaryStorage({
+        cloudinary: cloudinary,
+        params: {
+            folder: 'school-gallery',
+            allowed_formats: ['jpg', 'png', 'jpeg', 'gif'],
+        },
+    });
+} else {
+    console.log('⚠️ Cloudinary config missing. Using local storage fallback.');
+    storage = multer.diskStorage({
+        destination: (req, file, cb) => {
+            const uploadDir = path.join(__dirname, 'uploads');
+            if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+            cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+            cb(null, Date.now() + '-' + file.originalname);
+        },
+    });
+}
 
 const upload = multer({ storage });
-
-// Local storage fallback for existing routes if needed (though we'll prefer Cloudinary now)
-const localUploadDir = path.join(__dirname, 'uploads');
 
 // Routes
 
@@ -135,12 +149,12 @@ app.get('/api/gallery', async (req, res) => {
     }
 });
 
-// Add to Gallery (Now using Cloudinary)
+// Add to Gallery (Supports Cloudinary and Local Fallback)
 app.post('/api/gallery', (req, res) => {
     upload.single('image')(req, res, async (err) => {
         if (err) {
-            console.error("Gallery Upload Error (Multer/Cloudinary):", err);
-            return res.status(500).json({ success: false, message: 'Cloudinary upload failed: ' + err.message });
+            console.error("Gallery Upload Error:", err);
+            return res.status(500).json({ success: false, message: 'Upload failed: ' + err.message });
         }
 
         const { title } = req.body;
@@ -152,11 +166,14 @@ app.post('/api/gallery', (req, res) => {
 
         try {
             const count = await Gallery.countDocuments();
+            // If it's local storage, we want a relative URL. If Cloudinary, it's the full path.
+            const imageUrl = isCloudinaryConfigured ? file.path : `/uploads/${file.filename}`;
+
             const newImage = new Gallery({
                 id: count + 1,
                 title,
-                url: file.path, // Cloudinary provides the full URL in file.path
-                public_id: file.filename // Cloudinary provides the public_id in file.filename
+                url: imageUrl,
+                public_id: isCloudinaryConfigured ? file.filename : null
             });
             await newImage.save();
             res.json({ success: true, image: newImage });
@@ -651,11 +668,12 @@ app.post('/api/config', async (req, res) => {
 app.post('/api/upload', (req, res) => {
     upload.single('image')(req, res, (err) => {
         if (err) {
-            console.error("Generic Upload Error (Multer/Cloudinary):", err);
+            console.error("Generic Upload Error:", err);
             return res.status(500).json({ success: false, message: 'Upload failed: ' + err.message });
         }
         if (!req.file) return res.status(400).json({ message: 'No file' });
-        res.json({ success: true, url: req.file.path });
+        const imageUrl = isCloudinaryConfigured ? req.file.path : `/uploads/${req.file.filename}`;
+        res.json({ success: true, url: imageUrl });
     });
 });
 

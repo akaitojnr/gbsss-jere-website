@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useConfig } from '../context/ConfigContext';
+import { getImageUrl } from '../config';
 
 const HeroSlider = ({ slides }) => {
     const [current, setCurrent] = useState(0);
@@ -33,7 +34,7 @@ const HeroSlider = ({ slides }) => {
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("${slide.url}")`,
+                        backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("${getImageUrl(slide.url)}")`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         opacity: current === idx ? 1 : 0,
@@ -156,7 +157,7 @@ const Home = () => {
                     <div style={styles.welcomeGrid} className="grid-responsive">
                         <div style={styles.imagePlaceholder}>
                             <img
-                                src={schoolConfig.images.principal}
+                                src={getImageUrl(schoolConfig.images.principal)}
                                 alt="Principal"
                                 style={{ width: '100%', maxWidth: '300px', height: 'auto', borderRadius: '8px', display: 'block', margin: '0 auto' }}
                                 onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
