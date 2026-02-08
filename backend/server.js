@@ -603,7 +603,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
     // Frontend logic often prepends base URL, so returning relative /uploads/... is safer if base URL is dynamic.
     // server.js before returned `/uploads/...` in generic upload, but full URL in others.
     // Let's stick to relative for generic generic upload as per previous code.
-    res.json({ success: true, url: `/uploads/${req.file.filename}` });
+    res.json({ success: true, url: req.file.path });
 });
 
 if (require.main === module) {

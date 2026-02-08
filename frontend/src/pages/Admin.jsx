@@ -349,7 +349,7 @@ const Admin = () => {
             });
             const data = await res.json();
             if (data.success) {
-                const imageUrl = `${API_BASE_URL}${data.url}`;
+                const imageUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
                 handleNestedChange('images', field, imageUrl);
                 setImageUploadStatus('Image uploaded!');
             } else {
