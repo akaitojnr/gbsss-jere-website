@@ -432,7 +432,7 @@ app.post('/api/contact', async (req, res) => {
         });
         await newContact.save();
 
-        // Email logic...
+        // Email logic
         const config = await Config.findOne();
         if (config && config.contact && config.contact.email) {
             const transporter = nodemailer.createTransport({
@@ -442,7 +442,15 @@ app.post('/api/contact', async (req, res) => {
                     pass: "nuiosqrdlfaxtdos",
                 },
             });
-            // ... (rest of email logic same as before, simplified for brevity)
+
+            const mailOptions = {
+                from: "gbsssjereutme@gmail.com",
+                to: config.contact.email,
+                subject: `New Contact Message from ${name}`,
+                text: `You have a new message from ${name} (${email}):\n\n${message}`
+            };
+
+            await transporter.sendMail(mailOptions);
         }
 
         res.json({ success: true, message: 'Message stored' });
