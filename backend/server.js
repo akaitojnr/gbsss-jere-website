@@ -72,6 +72,11 @@ app.get('/api/db-status', (req, res) => {
 
 // Configure Multer
 // Configure Cloudinary
+console.log('--- CLOUDINARY CONFIG CHECK ---');
+console.log('CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'MISSING');
+console.log('API_KEY:', process.env.CLOUDINARY_API_KEY ? 'SET' : 'MISSING');
+console.log('API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'SET' : 'MISSING');
+
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -106,28 +111,35 @@ app.get('/api/gallery', async (req, res) => {
 });
 
 // Add to Gallery (Now using Cloudinary)
-app.post('/api/gallery', upload.single('image'), async (req, res) => {
-    const { title } = req.body;
-    const file = req.file;
+app.post('/api/gallery', (req, res) => {
+    upload.single('image')(req, res, async (err) => {
+        if (err) {
+            console.error("Gallery Upload Error (Multer/Cloudinary):", err);
+            return res.status(500).json({ success: false, message: 'Cloudinary upload failed: ' + err.message });
+        }
 
-    if (!file || !title) {
-        return res.status(400).json({ success: false, message: 'Title and Image are required' });
-    }
+        const { title } = req.body;
+        const file = req.file;
 
-    try {
-        const count = await Gallery.countDocuments();
-        const newImage = new Gallery({
-            id: count + 1,
-            title,
-            url: file.path, // Cloudinary provides the full URL in file.path
-            public_id: file.filename // Cloudinary provides the public_id in file.filename
-        });
-        await newImage.save();
-        res.json({ success: true, image: newImage });
-    } catch (err) {
-        console.error("Gallery Save Error:", err);
-        res.status(500).json({ success: false, message: 'Failed to save image: ' + err.message });
-    }
+        if (!file || !title) {
+            return res.status(400).json({ success: false, message: 'Title and Image are required' });
+        }
+
+        try {
+            const count = await Gallery.countDocuments();
+            const newImage = new Gallery({
+                id: count + 1,
+                title,
+                url: file.path, // Cloudinary provides the full URL in file.path
+                public_id: file.filename // Cloudinary provides the public_id in file.filename
+            });
+            await newImage.save();
+            res.json({ success: true, image: newImage });
+        } catch (dbErr) {
+            console.error("Gallery Save Error (DB):", dbErr);
+            res.status(500).json({ success: false, message: 'Failed to save image to database: ' + dbErr.message });
+        }
+    });
 });
 
 // Delete from Gallery
@@ -597,13 +609,25 @@ app.post('/api/config', async (req, res) => {
     }
 });
 
-app.post('/api/upload', upload.single('image'), (req, res) => {
-    if (!req.file) return res.status(400).json({ message: 'No file' });
-    // IMPORTANT: Return relative path or full URL based on config?
-    // Frontend logic often prepends base URL, so returning relative /uploads/... is safer if base URL is dynamic.
-    // server.js before returned `/uploads/...` in generic upload, but full URL in others.
-    // Let's stick to relative for generic generic upload as per previous code.
-    res.json({ success: true, url: req.file.path });
+app.post('/api/upload', (req, res) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            console.error("Generic Upload Error (Multer/Cloudinary):", err);
+            return res.status(500).json({ success: false, message: 'Upload failed: ' + err.message });
+        }
+        if (!req.file) return res.status(400).json({ message: 'No file' });
+        res.json({ success: true, url: req.file.path });
+    });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error('GLOBAL ERROR HANDLER:', err);
+    res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+        error: err.message
+    });
 });
 
 if (require.main === module) {
