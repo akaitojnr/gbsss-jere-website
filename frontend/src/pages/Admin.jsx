@@ -195,18 +195,21 @@ const Admin = () => {
         formData.append('image', image);
 
         try {
+            console.log(`Uploading gallery to: ${API_BASE_URL}/api/gallery`);
             const res = await fetch(`${API_BASE_URL}/api/gallery`, {
                 method: 'POST',
                 body: formData
             });
 
             const text = await res.text();
+            console.log(`Response Status: ${res.status}`);
+            console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
+
             let data;
             try {
                 data = JSON.parse(text);
             } catch (pErr) {
-                console.error("raw response:", text);
-                throw new Error("Server returned invalid response (Not JSON). Check Vercel logs.");
+                throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
             }
 
             if (data.success) {
@@ -351,18 +354,21 @@ const Admin = () => {
         formData.append('image', file);
 
         try {
+            console.log(`Uploading image to: ${API_BASE_URL}/api/upload`);
             const res = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 body: formData
             });
 
             const text = await res.text();
+            console.log(`Response Status: ${res.status}`);
+            console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
+
             let data;
             try {
                 data = JSON.parse(text);
             } catch (pErr) {
-                console.error("raw response:", text);
-                throw new Error("Invalid server response (Not JSON).");
+                throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
             }
 
             if (data.success) {
@@ -390,18 +396,21 @@ const Admin = () => {
         formData.append('image', file);
 
         try {
+            console.log(`Uploading slider to: ${API_BASE_URL}/api/upload`);
             const res = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 body: formData
             });
 
             const text = await res.text();
+            console.log(`Response Status: ${res.status}`);
+            console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
+
             let data;
             try {
                 data = JSON.parse(text);
             } catch (pErr) {
-                console.error("raw response:", text);
-                throw new Error("Invalid server response (Not JSON). " + text.substring(0, 100));
+                throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
             }
 
             if (data.success) {
