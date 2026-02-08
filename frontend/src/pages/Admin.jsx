@@ -1701,7 +1701,7 @@ const Admin = () => {
 
                             const method = editingStudent ? 'PUT' : 'POST';
                             const url = editingStudent
-                                ? `${API_BASE_URL}/api/students/${editingStudent}`
+                                ? `${API_BASE_URL}/api/students/${encodeURIComponent(editingStudent)}`
                                 : `${API_BASE_URL}/api/students`;
 
                             try {
@@ -1838,7 +1838,7 @@ const Admin = () => {
                                                         onClick={async () => {
                                                             if (window.confirm(`Delete ${student.name}?`)) {
                                                                 try {
-                                                                    const res = await fetch(`${API_BASE_URL}/api/students/${student.regNumber}`, {
+                                                                    const res = await fetch(`${API_BASE_URL}/api/students/${encodeURIComponent(student.regNumber)}`, {
                                                                         method: 'DELETE'
                                                                     });
                                                                     const data = await res.json();
