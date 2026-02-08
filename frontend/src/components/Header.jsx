@@ -43,7 +43,7 @@ const Header = () => {
                     ☰
                 </button>
 
-                <nav style={{ ...styles.nav, ...(isMenuOpen ? styles.navOpen : {}) }}>
+                <nav style={styles.nav} className={isMenuOpen ? 'open' : ''}>
                     <ul style={styles.navList}>
                         <li><NavLink to="/" style={getNavLinkStyle} onClick={toggleMenu} end>Home</NavLink></li>
                         <li><NavLink to="/about" style={getNavLinkStyle} onClick={toggleMenu}>About Us</NavLink></li>
@@ -95,15 +95,66 @@ const styles = {
         fontWeight: 'bold',
     },
     mobileMenuBtn: {
-        display: 'none', // Hidden on desktop
+        display: 'none',
         background: 'none',
         border: 'none',
         fontSize: '24px',
         cursor: 'pointer',
+        color: 'var(--primary-color)',
     },
-    // Mobile styles would typically need media queries. 
-    // For simplicity in inline-styles, we assume desktop first and add mobile handling logically or via CSS file.
-    // Ideally, move these to CSS Modules or Styled Components.
+    // Media Queries added via inline check or CSS file
 };
+
+// Add responsive styles to Header
+const headerStyles = `
+@media (max-width: 768px) {
+    header .container {
+        padding: 5px 15px;
+    }
+    header h1 {
+        font-size: 1.2rem;
+    }
+    header nav {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        flex-direction: column;
+        padding: 20px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 999;
+        display: block !important;
+    }
+    header nav.open {
+        transform: translateX(0);
+    }
+    header ul {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start !important;
+    }
+    header button {
+        display: block !important;
+    }
+    header li {
+        width: 100%;
+    }
+    header li a {
+        display: block;
+        padding: 10px 0;
+        font-size: 1.1rem;
+        border-bottom: 1px solid #eee;
+    }
+}
+`;
+
+if (typeof document !== 'undefined') {
+    const style = document.createElement('style');
+    style.innerText = headerStyles;
+    document.head.appendChild(style);
+}
 
 export default Header;

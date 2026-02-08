@@ -66,3 +66,34 @@ ul {
   color: var(--primary-color);
   font-size: 2rem;
 }
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+  }
+
+  .container {
+    padding: 0 15px;
+  }
+
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .mobile-hide {
+    display: none !important;
+  }
+
+  .mobile-text-center {
+    text-align: center !important;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    display: block;
+    width: 100%;
+  }
+}

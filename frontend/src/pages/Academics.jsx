@@ -25,26 +25,28 @@ const Academics = () => {
 
             <section style={{ marginTop: '40px' }}>
                 <h2>Academic Calendar</h2>
-                <table style={styles.table}>
-                    <thead>
-                        <tr>
-                            <th style={styles.th}>Term</th>
-                            <th style={styles.th}>Start Date</th>
-                            <th style={styles.th}>End Date</th>
-                            <th style={styles.th}>Activities</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {calendar.map((item, index) => (
-                            <tr key={index}>
-                                <td style={styles.td}>{item.term}</td>
-                                <td style={styles.td}>{item.start}</td>
-                                <td style={styles.td}>{item.end}</td>
-                                <td style={styles.td}>{item.activity}</td>
+                <div className="table-container">
+                    <table style={styles.table}>
+                        <thead>
+                            <tr>
+                                <th style={styles.th}>Term</th>
+                                <th style={styles.th}>Start Date</th>
+                                <th style={styles.th}>End Date</th>
+                                <th style={styles.th}>Activities</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {calendar.map((item, index) => (
+                                <tr key={index}>
+                                    <td style={styles.td}>{item.term}</td>
+                                    <td style={styles.td}>{item.start}</td>
+                                    <td style={styles.td}>{item.end}</td>
+                                    <td style={styles.td}>{item.activity}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </div>
     );

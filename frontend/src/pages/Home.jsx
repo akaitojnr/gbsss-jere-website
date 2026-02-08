@@ -4,6 +4,13 @@ import { useConfig } from '../context/ConfigContext';
 
 const HeroSlider = ({ slides }) => {
     const [current, setCurrent] = useState(0);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (!slides || slides.length === 0) return;
@@ -16,7 +23,7 @@ const HeroSlider = ({ slides }) => {
     if (!slides || slides.length === 0) return null;
 
     return (
-        <section style={{ position: 'relative', height: '600px', overflow: 'hidden', backgroundColor: '#000' }}>
+        <section style={{ position: 'relative', height: isMobile ? '400px' : '600px', overflow: 'hidden', backgroundColor: '#000' }}>
             {slides.map((slide, idx) => (
                 <div
                     key={idx}
@@ -36,7 +43,7 @@ const HeroSlider = ({ slides }) => {
                         justifyContent: 'center',
                         textAlign: 'center',
                         color: 'white',
-                        paddingBottom: '80px'
+                        paddingBottom: isMobile ? '40px' : '80px'
                     }}
                     onError={(e) => {
                         e.target.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("https://images.unsplash.com/photo-1523050853063-915994269f8c?q=80&w=1200&auto=format&fit=crop")`;
@@ -56,14 +63,14 @@ const HeroSlider = ({ slides }) => {
                             borderRadius: '12px',
                             border: '1px solid rgba(255, 255, 255, 0.1)',
                             boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-                            maxWidth: '90%'
+                            maxWidth: '96%'
                         }}>
-                            <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0,0,0,0.5)', color: 'white' }}>
+                            <h1 style={{ fontSize: isMobile ? '1.5rem' : '2.5rem', marginBottom: '10px', fontWeight: 'bold', textShadow: '2px 2px 4px rgba(0,0,0,0.5)', color: 'white' }}>
                                 {slide.caption || "Welcome to our School"}
                             </h1>
-                            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '30px' }}>
-                                <Link to="/admissions" className="btn btn-primary" style={{ padding: '12px 30px', fontSize: '1.1rem' }}>Apply Now</Link>
-                                <Link to="/about" className="btn btn-secondary" style={{ padding: '12px 30px', fontSize: '1.1rem', backgroundColor: 'rgba(255,255,255,0.2)', border: '1px solid white' }}>Learn More</Link>
+                            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: isMobile ? '15px' : '30px' }}>
+                                <Link to="/admissions" className="btn btn-primary" style={{ padding: isMobile ? '8px 20px' : '12px 30px', fontSize: isMobile ? '0.9rem' : '1.1rem' }}>Apply Now</Link>
+                                <Link to="/about" className="btn btn-secondary" style={{ padding: isMobile ? '8px 20px' : '12px 30px', fontSize: isMobile ? '0.9rem' : '1.1rem', backgroundColor: 'rgba(255,255,255,0.2)', border: '1px solid white' }}>Learn More</Link>
                             </div>
                         </div>
                     </div>
@@ -89,8 +96,12 @@ const HeroSlider = ({ slides }) => {
                 ))}
             </div>
 
-            <button onClick={() => setCurrent(prev => (prev - 1 + slides.length) % slides.length)} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.3)', color: 'white', border: 'none', padding: '15px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem', zIndex: 10 }}>&#10094;</button>
-            <button onClick={() => setCurrent(prev => (prev + 1) % slides.length)} style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.3)', color: 'white', border: 'none', padding: '15px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem', zIndex: 10 }}>&#10095;</button>
+            {!isMobile && (
+                <>
+                    <button onClick={() => setCurrent(prev => (prev - 1 + slides.length) % slides.length)} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.3)', color: 'white', border: 'none', padding: '15px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem', zIndex: 10 }}>&#10094;</button>
+                    <button onClick={() => setCurrent(prev => (prev + 1) % slides.length)} style={{ position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(0,0,0,0.3)', color: 'white', border: 'none', padding: '15px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem', zIndex: 10 }}>&#10095;</button>
+                </>
+            )}
         </section>
     );
 };
@@ -142,7 +153,7 @@ const Home = () => {
             {/* Principal's Welcome */}
             <section style={styles.section}>
                 <div className="container">
-                    <div style={styles.welcomeGrid}>
+                    <div style={styles.welcomeGrid} className="grid-responsive">
                         <div style={styles.imagePlaceholder}>
                             <img
                                 src={schoolConfig.images.principal}
@@ -169,7 +180,7 @@ const Home = () => {
             {/* Vision & Mission */}
             <section style={{ ...styles.section, backgroundColor: '#e9f5e9' }}>
                 <div className="container">
-                    <div style={styles.visionGrid}>
+                    <div style={styles.visionGrid} className="grid-responsive">
                         <div style={styles.card}>
                             <h3>Our Vision</h3>
                             <p>{schoolConfig.vision}</p>

@@ -11,7 +11,7 @@ const Footer = () => {
     return (
         <footer style={styles.footer} className="no-print">
             <div className="container">
-                <div style={styles.grid}>
+                <div style={styles.grid} className="grid-responsive">
                     <div>
                         <h3>{schoolConfig.name}</h3>
                         <p>{schoolConfig.motto}</p>

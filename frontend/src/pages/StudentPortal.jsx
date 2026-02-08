@@ -163,7 +163,7 @@ const StudentPortal = () => {
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginTop: '40px' }} className="no-print">
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginTop: '40px' }} className="no-print grid-responsive">
                             <div style={styles.actionCard}>
                                 <h3 style={{ color: 'var(--primary-color)' }}>Assignments</h3>
                                 {assignments.length === 0 ? <p>No pending assignments.</p> : (
@@ -353,7 +353,7 @@ const StudentPortal = () => {
                                 {activeExam.questions[currentQuestionIdx].question}
                             </p>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="grid-responsive">
                                 {activeExam.questions[currentQuestionIdx].options.map((opt, oIdx) => (
                                     <button
                                         key={oIdx}

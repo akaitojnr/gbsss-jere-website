@@ -27,7 +27,7 @@ const About = () => {
 
             <section>
                 <h2>Management Team</h2>
-                <div style={styles.teamGrid}>
+                <div style={styles.teamGrid} className="grid-responsive">
                     <div style={styles.teamMember}>
                         <img
                             src={schoolConfig.images.principal}

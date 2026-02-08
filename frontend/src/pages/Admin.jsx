@@ -1464,7 +1464,7 @@ const Admin = () => {
 
             {/* Assignments Tab */}
             {activeTab === 'assignments' && (
-                <div style={styles.grid}>
+                <div style={styles.grid} className="grid-responsive">
                     <div style={styles.card}>
                         <h2>Add New Assignment</h2>
                         <form onSubmit={handleAssignmentSubmit}>
@@ -1511,7 +1511,7 @@ const Admin = () => {
 
             {/* CBT Tab */}
             {activeTab === 'cbt' && (
-                <div style={styles.grid}>
+                <div style={styles.grid} className="grid-responsive">
                     <div style={styles.card}>
                         <h2>Create CBT Exam</h2>
                         <form onSubmit={handleExamSubmit}>
@@ -1725,7 +1725,7 @@ const Admin = () => {
                                 console.error(err);
                             }
                         }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }} className="grid-responsive">
                                 <div style={styles.formGroup}>
                                     <label style={styles.label}>Registration Number</label>
                                     <input
