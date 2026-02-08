@@ -199,7 +199,15 @@ const Admin = () => {
                 method: 'POST',
                 body: formData
             });
-            const data = await res.json();
+
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (pErr) {
+                console.error("raw response:", text);
+                throw new Error("Server returned invalid response (Not JSON). Check Vercel logs.");
+            }
 
             if (data.success) {
                 setStatus('Image uploaded successfully!');
@@ -208,10 +216,10 @@ const Admin = () => {
                 setPreview(null);
                 fetchGallery();
             } else {
-                setStatus('Upload failed: ' + data.message);
+                setStatus('Upload failed: ' + (data.message || 'Unknown Error'));
             }
         } catch (err) {
-            setStatus('Error uploading image.');
+            setStatus('Error: ' + err.message);
             console.error(err);
         }
     };
@@ -347,16 +355,26 @@ const Admin = () => {
                 method: 'POST',
                 body: formData
             });
-            const data = await res.json();
+
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (pErr) {
+                console.error("raw response:", text);
+                throw new Error("Invalid server response (Not JSON).");
+            }
+
             if (data.success) {
                 const imageUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
                 handleNestedChange('images', field, imageUrl);
                 setImageUploadStatus('Image uploaded!');
             } else {
-                setImageUploadStatus('Upload failed.');
+                setImageUploadStatus('Upload failed: ' + (data.message || 'Unknown Error'));
             }
         } catch (err) {
-            setImageUploadStatus('Error uploading image.');
+            setImageUploadStatus('Error: ' + err.message);
+            console.error(err);
         } finally {
             setUploadingImage(false);
         }
@@ -376,7 +394,16 @@ const Admin = () => {
                 method: 'POST',
                 body: formData
             });
-            const data = await res.json();
+
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (pErr) {
+                console.error("raw response:", text);
+                throw new Error("Invalid server response (Not JSON). " + text.substring(0, 100));
+            }
+
             if (data.success) {
                 const imageUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
                 setSettings(prev => {
@@ -396,13 +423,8 @@ const Admin = () => {
                 alert('Upload failed: ' + (data.message || 'Unknown error'));
             }
         } catch (err) {
-            setImageUploadStatus('Error uploading slider image.');
-            const errorMsg = err.message || 'Unknown error';
-            if (errorMsg.includes('Unexpected token') || errorMsg.includes('JSON')) {
-                alert('Server returned an invalid response (not JSON). This usually means the endpoint doesn\'t exist. PLEASE RESTART YOUR BACKEND SERVER.');
-            } else {
-                alert('Network Error: ' + errorMsg + '. Make sure the backend server is running and accessible.');
-            }
+            setImageUploadStatus('Error: ' + err.message);
+            alert('Error: ' + err.message);
             console.error(err);
         } finally {
             setUploadingImage(false);
