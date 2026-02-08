@@ -1665,7 +1665,7 @@ const Admin = () => {
                                 formData.append('csv', csvFile);
 
                                 try {
-                                    const res = await fetch('${API_BASE_URL}/api/import-results', {
+                                    const res = await fetch(`${API_BASE_URL}/api/import-results`, {
                                         method: 'POST',
                                         body: formData
                                     });
@@ -1701,8 +1701,8 @@ const Admin = () => {
 
                             const method = editingStudent ? 'PUT' : 'POST';
                             const url = editingStudent
-                                ? `http://localhost:3000/api/students/${editingStudent}`
-                                : 'http://localhost:3000/api/students';
+                                ? `${API_BASE_URL}/api/students/${editingStudent}`
+                                : `${API_BASE_URL}/api/students`;
 
                             try {
                                 const res = await fetch(url, {
@@ -1838,7 +1838,7 @@ const Admin = () => {
                                                         onClick={async () => {
                                                             if (window.confirm(`Delete ${student.name}?`)) {
                                                                 try {
-                                                                    const res = await fetch(`http://localhost:3000/api/students/${student.regNumber}`, {
+                                                                    const res = await fetch(`${API_BASE_URL}/api/students/${student.regNumber}`, {
                                                                         method: 'DELETE'
                                                                     });
                                                                     const data = await res.json();
