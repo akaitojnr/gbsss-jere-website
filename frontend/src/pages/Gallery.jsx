@@ -6,7 +6,7 @@ const Gallery = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('${API_BASE_URL}/api/gallery')
+        fetch(`${API_BASE_URL}/api/gallery`)
             .then(res => res.json())
             .then(data => {
                 setImages(data);

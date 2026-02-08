@@ -4,6 +4,7 @@ const configSchema = new mongoose.Schema({
     name: String,
     fullName: String,
     motto: String,
+    historyDescription: String,
     principal: {
         name: String,
         welcomeTitle: String,

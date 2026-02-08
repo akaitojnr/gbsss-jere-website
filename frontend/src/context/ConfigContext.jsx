@@ -46,10 +46,30 @@ export const ConfigProvider = ({ children }) => {
             const res = await fetch(`${API_BASE_URL}/api/config`);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
-            setConfig(data);
+
+            // Deep merge backend data with initialConfig to ensure all fields exist
+            const mergeConfig = (target, source) => {
+                const output = { ...target };
+                if (source && typeof source === 'object') {
+                    Object.keys(source).forEach(key => {
+                        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                            if (!(key in target)) {
+                                Object.assign(output, { [key]: source[key] });
+                            } else {
+                                output[key] = mergeConfig(target[key], source[key]);
+                            }
+                        } else if (source[key] !== undefined && source[key] !== null && source[key] !== '') {
+                            Object.assign(output, { [key]: source[key] });
+                        }
+                    });
+                }
+                return output;
+            };
+
+            setConfig(mergeConfig(initialConfig, data));
         } catch (err) {
             console.error("Failed to fetch configuration from backend:", err);
-            // Stay with empty object or previous config
+            // Fallback to initialConfig is already set by useState
         } finally {
             setLoading(false);
         }

@@ -6,7 +6,7 @@ const News = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('${API_BASE_URL}/api/news')
+        fetch(`${API_BASE_URL}/api/news`)
             .then(res => res.json())
             .then(data => {
                 setNews(data);
