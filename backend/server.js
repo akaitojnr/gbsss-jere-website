@@ -23,6 +23,7 @@ const News = require('./models/News');
 const Gallery = require('./models/Gallery');
 const Contact = require('./models/Contact');
 const Config = require('./models/Config');
+const AdmissionPin = require('./models/AdmissionPin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -657,6 +658,68 @@ app.post('/api/config', async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ message: 'Error' });
+    }
+});
+
+// --- Admission PINs API ---
+app.get('/api/admission-pins', async (req, res) => {
+    try {
+        const pins = await AdmissionPin.find().sort({ createdAt: -1 });
+        res.json(pins);
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Error fetching pins' });
+    }
+});
+
+app.post('/api/admission-pins', async (req, res) => {
+    const { count, candidateName } = req.body;
+    try {
+        const generatedPins = [];
+        const numToGenerate = count || 1;
+
+        for (let i = 0; i < numToGenerate; i++) {
+            // Generate a random 6-digit PIN
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            const newPin = new AdmissionPin({
+                code,
+                candidateName: candidateName || ''
+            });
+            await newPin.save();
+            generatedPins.push(newPin);
+        }
+
+        res.json({ success: true, pins: generatedPins });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Error generating pins: ' + err.message });
+    }
+});
+
+app.post('/api/admission-pins/validate', async (req, res) => {
+    const { code } = req.body;
+    try {
+        const pin = await AdmissionPin.findOne({ code });
+        if (!pin) {
+            return res.status(404).json({ success: false, message: 'Invalid PIN' });
+        }
+        if (pin.isUsed) {
+            return res.status(400).json({ success: false, message: 'PIN already used' });
+        }
+
+        // Mark as used when validated? Or maybe just allow access.
+        // Usually, Pins are for one-time access or one-time use.
+        // Let's just validate for now.
+        res.json({ success: true, pin });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Validation error' });
+    }
+});
+
+app.delete('/api/admission-pins/:id', async (req, res) => {
+    try {
+        await AdmissionPin.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'PIN deleted' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Delete failed' });
     }
 });
 

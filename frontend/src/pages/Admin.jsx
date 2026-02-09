@@ -49,6 +49,11 @@ const Admin = () => {
     // Contact Messages State
     const [contacts, setContacts] = useState([]);
 
+    // Admission PINs State
+    const [pins, setPins] = useState([]);
+    const [pinForm, setPinForm] = useState({ count: 1, candidateName: '' });
+    const [pinStatus, setPinStatus] = useState('');
+
     // Authentication States
     const [isAuthenticated, setIsAuthenticated] = useState(sessionStorage.getItem('adminAuth') === 'true');
     const [passwordInput, setPasswordInput] = useState('');
@@ -109,478 +114,526 @@ const Admin = () => {
             .then(res => res.json())
             .then(data => setExams(data))
             .catch(err => console.error("Error fetching exams:", err));
-    };
+        const fetchExams = () => {
+            fetch(`${API_BASE_URL}/api/cbt`)
+                .then(res => res.json())
+                .then(data => setExams(data))
+                .catch(err => console.error("Error fetching exams:", err));
+        };
 
-    const fetchContacts = async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/contacts`);
-            const data = await res.json();
-            setContacts(Array.isArray(data) ? data : []);
-        } catch (err) {
-            console.error('Error fetching contacts:', err);
-        }
-    };
+        const fetchPins = () => {
+            fetch(`${API_BASE_URL}/api/admission-pins`)
+                .then(res => res.json())
+                .then(data => setPins(data))
+                .catch(err => console.error("Error fetching pins:", err));
+        };
 
-    const handleContactDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this message?')) return;
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/contacts/${id}`, { method: 'DELETE' });
-            if ((await res.json()).success) fetchContacts();
-        } catch (err) {
-            console.error(err);
-        }
-    };
+        const fetchContacts = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/contacts`);
+                const data = await res.json();
+                setContacts(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error('Error fetching contacts:', err);
+            }
+        };
 
-    useEffect(() => {
-        fetchGallery();
-        fetchNews();
-        fetchStudents();
-        fetchAssignments();
-        fetchExams();
-        fetchContacts();
-    }, []);
+        const handleContactDelete = async (id) => {
+            if (!window.confirm('Are you sure you want to delete this message?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/contacts/${id}`, { method: 'DELETE' });
+                if ((await res.json()).success) fetchContacts();
+            } catch (err) {
+                console.error(err);
+            }
+        };
 
-    if (!isAuthenticated) {
-        return (
-            <div className="container" style={{ padding: '100px 20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
-                <div style={styles.card}>
-                    <img src={config?.images?.logo} alt="Logo" style={{ width: '80px', marginBottom: '20px' }} />
-                    <h2 style={{ marginBottom: '20px' }}>Admin Login</h2>
-                    <form onSubmit={handleLogin}>
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>Enter Admin Password</label>
-                            <input
-                                type="password"
-                                value={passwordInput}
-                                onChange={(e) => setPasswordInput(e.target.value)}
-                                style={styles.input}
-                                placeholder="Password"
-                                autoFocus
-                            />
-                        </div>
-                        {authError && <p style={{ color: 'red', marginBottom: '15px', fontSize: '0.9rem' }}>{authError}</p>}
-                        <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px' }}>
-                            Access Dashboard
-                        </button>
-                    </form>
-                    <p style={{ marginTop: '20px', fontSize: '0.8rem', color: '#666' }}>
-                        Secured Administrative Area
-                    </p>
+        useEffect(() => {
+            fetchGallery();
+            fetchNews();
+            fetchStudents();
+            fetchAssignments();
+            fetchExams();
+            fetchExams();
+            fetchContacts();
+            fetchPins();
+        }, []);
+
+        if (!isAuthenticated) {
+            return (
+                <div className="container" style={{ padding: '100px 20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
+                    <div style={styles.card}>
+                        <img src={config?.images?.logo} alt="Logo" style={{ width: '80px', marginBottom: '20px' }} />
+                        <h2 style={{ marginBottom: '20px' }}>Admin Login</h2>
+                        <form onSubmit={handleLogin}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Enter Admin Password</label>
+                                <input
+                                    type="password"
+                                    value={passwordInput}
+                                    onChange={(e) => setPasswordInput(e.target.value)}
+                                    style={styles.input}
+                                    placeholder="Password"
+                                    autoFocus
+                                />
+                            </div>
+                            {authError && <p style={{ color: 'red', marginBottom: '15px', fontSize: '0.9rem' }}>{authError}</p>}
+                            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px' }}>
+                                Access Dashboard
+                            </button>
+                        </form>
+                        <p style={{ marginTop: '20px', fontSize: '0.8rem', color: '#666' }}>
+                            Secured Administrative Area
+                        </p>
+                    </div>
                 </div>
-            </div>
-        );
-    }
-
-    if (loading || !config || !settings) return <div className="container" style={{ padding: '60px' }}>Loading...</div>;
-
-    // Gallery Handlers
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setImage(file);
-            setPreview(URL.createObjectURL(file));
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!title || !image) {
-            setStatus('Please provide both title and image.');
-            return;
+            );
         }
 
-        setStatus('Uploading...');
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('image', image);
+        if (loading || !config || !settings) return <div className="container" style={{ padding: '60px' }}>Loading...</div>;
 
-        try {
-            console.log(`Uploading gallery to: ${API_BASE_URL}/api/gallery`);
-            const res = await fetch(`${API_BASE_URL}/api/gallery`, {
-                method: 'POST',
-                body: formData
-            });
+        // Gallery Handlers
+        const handleImageChange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                setImage(file);
+                setPreview(URL.createObjectURL(file));
+            }
+        };
 
-            const text = await res.text();
-            console.log(`Response Status: ${res.status}`);
-            console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            if (!title || !image) {
+                setStatus('Please provide both title and image.');
+                return;
+            }
 
-            let data;
+            setStatus('Uploading...');
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('image', image);
+
             try {
-                data = JSON.parse(text);
-            } catch (pErr) {
-                throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
-            }
-
-            if (data.success) {
-                setStatus('Image uploaded successfully!');
-                setTitle('');
-                setImage(null);
-                setPreview(null);
-                fetchGallery();
-            } else {
-                setStatus('Upload failed: ' + (data.message || 'Unknown Error'));
-            }
-        } catch (err) {
-            setStatus('Error: ' + err.message);
-            console.error(err);
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this image?')) return;
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/gallery/${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            if (data.success) {
-                fetchGallery();
-            } else {
-                alert(data.message);
-            }
-        } catch (err) {
-            console.error('Error deleting image:', err);
-        }
-    };
-
-    // News Handlers
-    const handleNewsSubmit = async (e) => {
-        e.preventDefault();
-        setNewsStatus('Saving...');
-
-        try {
-            const url = editingNews
-                ? `${API_BASE_URL}/api/news/${newsForm.id}`
-                : `${API_BASE_URL}/api/news`;
-
-            const method = editingNews ? 'PUT' : 'POST';
-
-            const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newsForm)
-            });
-
-            const data = await res.json();
-            if (data.success) {
-                setNewsStatus(editingNews ? 'Article updated!' : 'Article added!');
-                setNewsForm({ id: null, title: '', date: '', content: '' });
-                setEditingNews(false);
-                fetchNews();
-            } else {
-                setNewsStatus('Failed: ' + data.message);
-            }
-        } catch (err) {
-            setNewsStatus('Error saving article.');
-            console.error(err);
-        }
-    };
-
-    const handleNewsEdit = (article) => {
-        setNewsForm(article);
-        setEditingNews(true);
-        setNewsStatus('');
-    };
-
-    const handleNewsDelete = async (id) => {
-        if (!window.confirm('Delete this news article?')) return;
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/news/${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            if (data.success) {
-                fetchNews();
-            } else {
-                alert(data.message);
-            }
-        } catch (err) {
-            console.error('Error deleting article:', err);
-        }
-    };
-
-    // Settings Handlers
-    const handleSettingsChange = (field, value) => {
-        setSettings(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleNestedChange = (obj, field, value) => {
-        setSettings(prev => ({
-            ...prev,
-            [obj]: { ...prev[obj], [field]: value }
-        }));
-    };
-
-    const handleArrayChange = (obj, index, field, value) => {
-        setSettings(prev => {
-            const newArray = [...prev[obj]];
-            newArray[index] = { ...newArray[index], [field]: value };
-            return { ...prev, [obj]: newArray };
-        });
-    };
-
-    const handleAddToArray = (obj, newItem) => {
-        setSettings(prev => ({
-            ...prev,
-            [obj]: [...prev[obj], newItem]
-        }));
-    };
-
-    const handleRemoveFromArray = (obj, index) => {
-        setSettings(prev => ({
-            ...prev,
-            [obj]: prev[obj].filter((_, i) => i !== index)
-        }));
-    };
-
-    const handleSaveSettings = async (e) => {
-        e.preventDefault();
-        setSaveStatus('Saving...');
-        const success = await updateConfig(settings);
-        if (success) {
-            setSaveStatus('Settings updated successfully!');
-            await refreshConfig();
-        } else {
-            setSaveStatus('Failed to update settings.');
-        }
-    };
-
-    const handleImageUpload = async (e, field) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setUploadingImage(true);
-        setImageUploadStatus(`Uploading ${field}...`);
-        const formData = new FormData();
-        formData.append('image', file);
-
-        try {
-            console.log(`Uploading image to: ${API_BASE_URL}/api/upload`);
-            const res = await fetch(`${API_BASE_URL}/api/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            const text = await res.text();
-            console.log(`Response Status: ${res.status}`);
-            console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
-
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (pErr) {
-                throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
-            }
-
-            if (data.success) {
-                const imageUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
-                handleNestedChange('images', field, imageUrl);
-                setImageUploadStatus('Image uploaded!');
-            } else {
-                setImageUploadStatus('Upload failed: ' + (data.message || 'Unknown Error'));
-            }
-        } catch (err) {
-            setImageUploadStatus('Error: ' + err.message);
-            console.error(err);
-        } finally {
-            setUploadingImage(false);
-        }
-    };
-
-    const handleSliderUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setUploadingImage(true);
-        setImageUploadStatus('Uploading slider image...');
-        const formData = new FormData();
-        formData.append('image', file);
-
-        try {
-            console.log(`Uploading slider to: ${API_BASE_URL}/api/upload`);
-            const res = await fetch(`${API_BASE_URL}/api/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            const text = await res.text();
-            console.log(`Response Status: ${res.status}`);
-            console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
-
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (pErr) {
-                throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
-            }
-
-            if (data.success) {
-                const imageUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
-                setSettings(prev => {
-                    const currentSlider = prev.images.heroSlider || [];
-                    return {
-                        ...prev,
-                        images: {
-                            ...prev.images,
-                            heroSlider: [...currentSlider, { url: imageUrl, caption: '' }]
-                        }
-                    };
+                console.log(`Uploading gallery to: ${API_BASE_URL}/api/gallery`);
+                const res = await fetch(`${API_BASE_URL}/api/gallery`, {
+                    method: 'POST',
+                    body: formData
                 });
-                setImageUploadStatus('Slider image added! Remember to click "Save All Changes" at the bottom.');
-                e.target.value = ''; // Reset input
-            } else {
-                setImageUploadStatus('Upload failed: ' + (data.message || 'Unknown error'));
-                alert('Upload failed: ' + (data.message || 'Unknown error'));
+
+                const text = await res.text();
+                console.log(`Response Status: ${res.status}`);
+                console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (pErr) {
+                    throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
+                }
+
+                if (data.success) {
+                    setStatus('Image uploaded successfully!');
+                    setTitle('');
+                    setImage(null);
+                    setPreview(null);
+                    fetchGallery();
+                } else {
+                    setStatus('Upload failed: ' + (data.message || 'Unknown Error'));
+                }
+            } catch (err) {
+                setStatus('Error: ' + err.message);
+                console.error(err);
             }
-        } catch (err) {
-            setImageUploadStatus('Error: ' + err.message);
-            alert('Error: ' + err.message);
-            console.error(err);
-        } finally {
-            setUploadingImage(false);
+        };
+
+        const handleDelete = async (id) => {
+            if (!window.confirm('Are you sure you want to delete this image?')) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/gallery/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    fetchGallery();
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) {
+                console.error('Error deleting image:', err);
+            }
+        };
+
+        // News Handlers
+        const handleNewsSubmit = async (e) => {
+            e.preventDefault();
+            setNewsStatus('Saving...');
+
+            try {
+                const url = editingNews
+                    ? `${API_BASE_URL}/api/news/${newsForm.id}`
+                    : `${API_BASE_URL}/api/news`;
+
+                const method = editingNews ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newsForm)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    setNewsStatus(editingNews ? 'Article updated!' : 'Article added!');
+                    setNewsForm({ id: null, title: '', date: '', content: '' });
+                    setEditingNews(false);
+                    fetchNews();
+                } else {
+                    setNewsStatus('Failed: ' + data.message);
+                }
+            } catch (err) {
+                setNewsStatus('Error saving article.');
+                console.error(err);
+            }
+        };
+
+        const handleNewsEdit = (article) => {
+            setNewsForm(article);
+            setEditingNews(true);
+            setNewsStatus('');
+        };
+
+        const handleNewsDelete = async (id) => {
+            if (!window.confirm('Delete this news article?')) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/news/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    fetchNews();
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) {
+                console.error('Error deleting article:', err);
+            }
+        };
+
+        // Settings Handlers
+        const handleSettingsChange = (field, value) => {
+            setSettings(prev => ({ ...prev, [field]: value }));
+        };
+
+        const handleNestedChange = (obj, field, value) => {
+            setSettings(prev => ({
+                ...prev,
+                [obj]: { ...prev[obj], [field]: value }
+            }));
+        };
+
+        const handleArrayChange = (obj, index, field, value) => {
+            setSettings(prev => {
+                const newArray = [...prev[obj]];
+                newArray[index] = { ...newArray[index], [field]: value };
+                return { ...prev, [obj]: newArray };
+            });
+        };
+
+        const handleAddToArray = (obj, newItem) => {
+            setSettings(prev => ({
+                ...prev,
+                [obj]: [...prev[obj], newItem]
+            }));
+        };
+
+        const handleRemoveFromArray = (obj, index) => {
+            setSettings(prev => ({
+                ...prev,
+                [obj]: prev[obj].filter((_, i) => i !== index)
+            }));
+        };
+
+        const handleSaveSettings = async (e) => {
+            e.preventDefault();
+            setSaveStatus('Saving...');
+            const success = await updateConfig(settings);
+            if (success) {
+                setSaveStatus('Settings updated successfully!');
+                await refreshConfig();
+            } else {
+                setSaveStatus('Failed to update settings.');
+            }
+        };
+
+        const handleImageUpload = async (e, field) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            setUploadingImage(true);
+            setImageUploadStatus(`Uploading ${field}...`);
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                console.log(`Uploading image to: ${API_BASE_URL}/api/upload`);
+                const res = await fetch(`${API_BASE_URL}/api/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const text = await res.text();
+                console.log(`Response Status: ${res.status}`);
+                console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (pErr) {
+                    throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
+                }
+
+                if (data.success) {
+                    const imageUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
+                    handleNestedChange('images', field, imageUrl);
+                    setImageUploadStatus('Image uploaded!');
+                } else {
+                    setImageUploadStatus('Upload failed: ' + (data.message || 'Unknown Error'));
+                }
+            } catch (err) {
+                setImageUploadStatus('Error: ' + err.message);
+                console.error(err);
+            } finally {
+                setUploadingImage(false);
+            }
+        };
+
+        const handleSliderUpload = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            setUploadingImage(true);
+            setImageUploadStatus('Uploading slider image...');
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                console.log(`Uploading slider to: ${API_BASE_URL}/api/upload`);
+                const res = await fetch(`${API_BASE_URL}/api/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const text = await res.text();
+                console.log(`Response Status: ${res.status}`);
+                console.log(`Response Body (first 200 chars): ${text.substring(0, 200)}`);
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (pErr) {
+                    throw new Error(`Invalid server response (Status ${res.status}). Body: ${text.substring(0, 50)}...`);
+                }
+
+                if (data.success) {
+                    const imageUrl = data.url.startsWith('http') ? data.url : `${API_BASE_URL}${data.url}`;
+                    setSettings(prev => {
+                        const currentSlider = prev.images.heroSlider || [];
+                        return {
+                            ...prev,
+                            images: {
+                                ...prev.images,
+                                heroSlider: [...currentSlider, { url: imageUrl, caption: '' }]
+                            }
+                        };
+                    });
+                    setImageUploadStatus('Slider image added! Remember to click "Save All Changes" at the bottom.');
+                    e.target.value = ''; // Reset input
+                } else {
+                    setImageUploadStatus('Upload failed: ' + (data.message || 'Unknown error'));
+                    alert('Upload failed: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                setImageUploadStatus('Error: ' + err.message);
+                alert('Error: ' + err.message);
+                console.error(err);
+            } finally {
+                setUploadingImage(false);
+            }
+        };
+
+        const removeSliderItem = (index) => {
+            setSettings(prev => {
+                const newSlider = prev.images.heroSlider.filter((_, i) => i !== index);
+                return {
+                    ...prev,
+                    images: { ...prev.images, heroSlider: newSlider }
+                };
+            });
+        };
+
+        const updateSliderCaption = (index, caption) => {
+            setSettings(prev => {
+                const newSlider = [...prev.images.heroSlider];
+                newSlider[index] = { ...newSlider[index], caption };
+                return {
+                    ...prev,
+                    images: { ...prev.images, heroSlider: newSlider }
+                };
+            });
+        };
+
+        // Assignment Handlers
+        const handleAssignmentSubmit = async (e) => {
+            e.preventDefault();
+            setAssignmentStatus('Saving...');
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/assignments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(assignmentForm)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setAssignmentStatus('Assignment added!');
+                    setAssignmentForm({ title: '', description: '', dueDate: '', subject: '', class: '' });
+                    fetchAssignments();
+                } else {
+                    setAssignmentStatus('Failed: ' + data.message);
+                }
+            } catch (err) {
+                setAssignmentStatus('Error saving assignment.');
+            }
+        };
+
+        const handleAssignmentDelete = async (id) => {
+            if (!window.confirm('Delete this assignment?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/assignments/${id}`, { method: 'DELETE' });
+                if ((await res.json()).success) fetchAssignments();
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        // CBT Handlers
+        const handleExamSubmit = async (e) => {
+            e.preventDefault();
+            setExamStatus('Saving...');
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/cbt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(examForm)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setExamStatus('Exam added!');
+                    setExamForm({ title: '', subject: '', class: '', timeLimit: 30, questions: [{ question: '', options: ['', '', '', ''], correct: 0 }] });
+                    fetchExams();
+                } else {
+                    setExamStatus('Failed: ' + data.message);
+                }
+            } catch (err) {
+                setExamStatus('Error saving exam.');
+            }
+        };
+
+        const handleExamDelete = async (id) => {
+            if (!window.confirm('Delete this exam?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/cbt/${id}`, { method: 'DELETE' });
+                if ((await res.json()).success) fetchExams();
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        const addQuestion = () => {
+            setExamForm({
+                ...examForm,
+                questions: [...examForm.questions, { question: '', options: ['', '', '', ''], correct: 0 }]
+            });
+        };
+
+        const updateQuestion = (idx, field, value) => {
+            const newQuestions = [...examForm.questions];
+            newQuestions[idx][field] = value;
+            setExamForm({ ...examForm, questions: newQuestions });
+        };
+
+        const updateOption = (qIdx, oIdx, value) => {
+            const newQuestions = [...examForm.questions];
+            newQuestions[qIdx].options[oIdx] = value;
+            setExamForm({ ...examForm, questions: newQuestions });
+        };
+
+        const downloadQuestionTemplate = () => {
+            const headers = "Question,Option A,Option B,Option C,Option D,Correct Answer (A/B/C/D)\nWhat is the capital of Nigeria?,Lagos,Abuja,Kano,Ibadan,B\n";
+            const blob = new Blob([headers], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cbt_questions_template.csv';
+            a.click();
+        };
+
+        const handleQuestionImport = async () => {
+            if (!importFile) {
+                setImportQStatus('Please select a file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', importFile);
+            setImportQStatus('Importing...');
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/import-questions`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setExamForm({ ...examForm, questions: data.questions });
+                    setImportQStatus(`✅ Successfully imported ${data.questions.length} questions!`);
+                    setImportFile(null);
+                } else {
+                    setImportQStatus('❌ ' + data.message);
+                }
+            } catch (err) {
+                setImportQStatus('❌ Error importing questions');
+            }
         }
     };
 
-    const removeSliderItem = (index) => {
-        setSettings(prev => {
-            const newSlider = prev.images.heroSlider.filter((_, i) => i !== index);
-            return {
-                ...prev,
-                images: { ...prev.images, heroSlider: newSlider }
-            };
-        });
-    };
-
-    const updateSliderCaption = (index, caption) => {
-        setSettings(prev => {
-            const newSlider = [...prev.images.heroSlider];
-            newSlider[index] = { ...newSlider[index], caption };
-            return {
-                ...prev,
-                images: { ...prev.images, heroSlider: newSlider }
-            };
-        });
-    };
-
-    // Assignment Handlers
-    const handleAssignmentSubmit = async (e) => {
+    // Admission PIN Handlers
+    const handlePinGenerate = async (e) => {
         e.preventDefault();
-        setAssignmentStatus('Saving...');
+        setPinStatus('Generating...');
         try {
-            const res = await fetch(`${API_BASE_URL}/api/assignments`, {
+            const res = await fetch(`${API_BASE_URL}/api/admission-pins`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(assignmentForm)
+                body: JSON.stringify(pinForm)
             });
             const data = await res.json();
             if (data.success) {
-                setAssignmentStatus('Assignment added!');
-                setAssignmentForm({ title: '', description: '', dueDate: '', subject: '', class: '' });
-                fetchAssignments();
+                setPinStatus(`Generated ${data.pins.length} pin(s) successfully!`);
+                setPinForm({ count: 1, candidateName: '' });
+                fetchPins();
             } else {
-                setAssignmentStatus('Failed: ' + data.message);
+                setPinStatus('Failed: ' + data.message);
             }
         } catch (err) {
-            setAssignmentStatus('Error saving assignment.');
+            setPinStatus('Error generating pins.');
         }
     };
 
-    const handleAssignmentDelete = async (id) => {
-        if (!window.confirm('Delete this assignment?')) return;
+    const handlePinDelete = async (id) => {
+        if (!window.confirm('Delete this PIN?')) return;
         try {
-            const res = await fetch(`${API_BASE_URL}/api/assignments/${id}`, { method: 'DELETE' });
-            if ((await res.json()).success) fetchAssignments();
+            const res = await fetch(`${API_BASE_URL}/api/admission-pins/${id}`, { method: 'DELETE' });
+            if ((await res.json()).success) fetchPins();
         } catch (err) {
-            console.error(err);
-        }
-    };
-
-    // CBT Handlers
-    const handleExamSubmit = async (e) => {
-        e.preventDefault();
-        setExamStatus('Saving...');
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/cbt`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(examForm)
-            });
-            const data = await res.json();
-            if (data.success) {
-                setExamStatus('Exam added!');
-                setExamForm({ title: '', subject: '', class: '', timeLimit: 30, questions: [{ question: '', options: ['', '', '', ''], correct: 0 }] });
-                fetchExams();
-            } else {
-                setExamStatus('Failed: ' + data.message);
-            }
-        } catch (err) {
-            setExamStatus('Error saving exam.');
-        }
-    };
-
-    const handleExamDelete = async (id) => {
-        if (!window.confirm('Delete this exam?')) return;
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/cbt/${id}`, { method: 'DELETE' });
-            if ((await res.json()).success) fetchExams();
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const addQuestion = () => {
-        setExamForm({
-            ...examForm,
-            questions: [...examForm.questions, { question: '', options: ['', '', '', ''], correct: 0 }]
-        });
-    };
-
-    const updateQuestion = (idx, field, value) => {
-        const newQuestions = [...examForm.questions];
-        newQuestions[idx][field] = value;
-        setExamForm({ ...examForm, questions: newQuestions });
-    };
-
-    const updateOption = (qIdx, oIdx, value) => {
-        const newQuestions = [...examForm.questions];
-        newQuestions[qIdx].options[oIdx] = value;
-        setExamForm({ ...examForm, questions: newQuestions });
-    };
-
-    const downloadQuestionTemplate = () => {
-        const headers = "Question,Option A,Option B,Option C,Option D,Correct Answer (A/B/C/D)\nWhat is the capital of Nigeria?,Lagos,Abuja,Kano,Ibadan,B\n";
-        const blob = new Blob([headers], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'cbt_questions_template.csv';
-        a.click();
-    };
-
-    const handleQuestionImport = async () => {
-        if (!importFile) {
-            setImportQStatus('Please select a file');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', importFile);
-        setImportQStatus('Importing...');
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/import-questions`, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-            if (data.success) {
-                setExamForm({ ...examForm, questions: data.questions });
-                setImportQStatus(`✅ Successfully imported ${data.questions.length} questions!`);
-                setImportFile(null);
-            } else {
-                setImportQStatus('❌ ' + data.message);
-            }
-        } catch (err) {
-            setImportQStatus('❌ Error importing questions');
+            console.error('Error deleting pin:', err);
         }
     };
 
@@ -599,7 +652,7 @@ const Admin = () => {
 
             {/* Tab Navigation */}
             <div style={styles.tabs}>
-                {['gallery', 'school', 'news', 'about', 'academics', 'admissions', 'contact', 'messages', 'students', 'assignments', 'cbt'].map(tab => (
+                {['gallery', 'school', 'news', 'about', 'academics', 'admissions', 'pins', 'contact', 'messages', 'students', 'assignments', 'cbt'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -611,6 +664,7 @@ const Admin = () => {
                         {tab === 'about' && 'About Us'}
                         {tab === 'academics' && 'Academics'}
                         {tab === 'admissions' && 'Admissions'}
+                        {tab === 'pins' && 'Admission PINs'}
                         {tab === 'contact' && 'Contact & Social'}
                         {tab === 'messages' && 'Messages'}
                         {tab === 'students' && 'Students & Results'}
@@ -684,6 +738,92 @@ const Admin = () => {
                                 ))}
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Admission PINs Tab */}
+            {activeTab === 'pins' && (
+                <div style={styles.grid}>
+                    <div style={styles.card}>
+                        <h2>Generate Admission PINs</h2>
+                        <form onSubmit={handlePinGenerate} style={styles.form}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Number of PINs</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="50"
+                                    value={pinForm.count}
+                                    onChange={(e) => setPinForm({ ...pinForm, count: parseInt(e.target.value) })}
+                                    style={styles.input}
+                                />
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Candidate Name (Optional)</label>
+                                <input
+                                    type="text"
+                                    placeholder="Assign to specific person (optional)"
+                                    value={pinForm.candidateName}
+                                    onChange={(e) => setPinForm({ ...pinForm, candidateName: e.target.value })}
+                                    style={styles.input}
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+                                Generate PINs
+                            </button>
+                            {pinStatus && <p style={{ marginTop: '10px', fontWeight: 'bold' }}>{pinStatus}</p>}
+                        </form>
+                    </div>
+
+                    <div style={styles.card}>
+                        <h2>Active PINs</h2>
+                        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ textAlign: 'left', borderBottom: '1px solid #ddd' }}>
+                                        <th style={{ padding: '8px' }}>PIN Code</th>
+                                        <th style={{ padding: '8px' }}>Status</th>
+                                        <th style={{ padding: '8px' }}>Candidate</th>
+                                        <th style={{ padding: '8px' }}>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pins.map(pin => (
+                                        <tr key={pin._id} style={{ borderBottom: '1px solid #eee' }}>
+                                            <td style={{ padding: '8px', fontFamily: 'monospace', fontWeight: 'bold' }}>{pin.code}</td>
+                                            <td style={{ padding: '8px' }}>
+                                                <span style={{
+                                                    padding: '2px 6px',
+                                                    borderRadius: '4px',
+                                                    backgroundColor: pin.isUsed ? '#ffebee' : '#e8f5e9',
+                                                    color: pin.isUsed ? '#c62828' : '#2e7d32',
+                                                    fontSize: '0.8rem'
+                                                }}>
+                                                    {pin.isUsed ? 'Used' : 'Active'}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '8px' }}>{pin.candidateName || '-'}</td>
+                                            <td style={{ padding: '8px' }}>
+                                                <button
+                                                    onClick={() => handlePinDelete(pin._id)}
+                                                    style={{ ...styles.deleteBtn, padding: '4px 8px', fontSize: '0.8rem' }}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {pins.length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+                                                No PINs generated yet.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}
