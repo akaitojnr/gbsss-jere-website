@@ -635,7 +635,7 @@ app.get('/api/submissions/:regNumber', async (req, res) => {
 
 app.get('/api/submissions', async (req, res) => {
     try {
-        const subs = await Submission.find().sort({ createdAt: -1 });
+        const subs = await Submission.find().sort({ submittedAt: -1 });
         res.json(subs);
     } catch (err) {
         res.status(500).json({ message: 'Error' });
@@ -644,8 +644,24 @@ app.get('/api/submissions', async (req, res) => {
 
 app.delete('/api/submissions/:id', async (req, res) => {
     try {
-        await Submission.findByIdAndDelete(req.params.id);
-        res.json({ success: true });
+        const { id } = req.params;
+        let result = null;
+
+        // Try deleting by MongoDB _id first if it looks like one
+        if (id.match(/^[0-9a-fA-F]{24}$/)) {
+            result = await Submission.findByIdAndDelete(id);
+        }
+
+        // If not found or not an ObjectId, try custom numeric 'id'
+        if (!result && !isNaN(id)) {
+            result = await Submission.findOneAndDelete({ id: parseInt(id) });
+        }
+
+        if (result) {
+            res.json({ success: true, message: 'Deleted' });
+        } else {
+            res.status(404).json({ success: false, message: 'Submission not found' });
+        }
     } catch (err) {
         res.status(500).json({ message: 'Error' });
     }
