@@ -1,5 +1,6 @@
 const path = require('path');
 // Only load .env file if MONGO_URI is not already set (for local development)
+// Last Revert Sync: 2026-02-09
 if (!process.env.MONGO_URI) {
     require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 }
