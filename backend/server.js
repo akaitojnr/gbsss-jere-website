@@ -705,9 +705,10 @@ app.post('/api/admission-pins/validate', async (req, res) => {
             return res.status(400).json({ success: false, message: 'PIN already used' });
         }
 
-        // Mark as used when validated? Or maybe just allow access.
-        // Usually, Pins are for one-time access or one-time use.
-        // Let's just validate for now.
+        // Mark as used when validated
+        pin.isUsed = true;
+        await pin.save();
+
         res.json({ success: true, pin });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Validation error' });

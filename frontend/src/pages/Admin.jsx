@@ -61,7 +61,8 @@ const Admin = () => {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (passwordInput === 'gbsss@jere/admin') {
+        const adminPass = import.meta.env.VITE_ADMIN_PASSWORD || 'gbsss@jere/admin';
+        if (passwordInput === adminPass) {
             setIsAuthenticated(true);
             sessionStorage.setItem('adminAuth', 'true');
             setAuthError('');
