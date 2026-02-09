@@ -11,7 +11,7 @@ frontend/node_modules/
 
 # Build outputs
 frontend/dist/
-backend/uploads/
+# backend/uploads/ - UN-IGNORED to ensure images are pushed to Vercel
 
 # Logs
 *.log

@@ -20,7 +20,7 @@ const initialConfig = {
     },
     images: {
         logo: "/images/logo.png",
-        hero: "/images/hero.jpg",
+        hero: "/images/principal.png", // Use principal as fallback if hero.jpg is missing
         principal: "/images/principal.png"
     },
     vision: "To be a model school for academic excellence and character development in Nigeria.",
