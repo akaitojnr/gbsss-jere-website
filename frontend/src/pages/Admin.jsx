@@ -114,13 +114,6 @@ const Admin = () => {
             .then(res => res.json())
             .then(data => setExams(data))
             .catch(err => console.error("Error fetching exams:", err));
-        const fetchExams = () => {
-            fetch(`${API_BASE_URL}/api/cbt`)
-                .then(res => res.json())
-                .then(data => setExams(data))
-                .catch(err => console.error("Error fetching exams:", err));
-        };
-
         const fetchPins = () => {
             fetch(`${API_BASE_URL}/api/admission-pins`)
                 .then(res => res.json())
@@ -153,7 +146,6 @@ const Admin = () => {
             fetchNews();
             fetchStudents();
             fetchAssignments();
-            fetchExams();
             fetchExams();
             fetchContacts();
             fetchPins();
