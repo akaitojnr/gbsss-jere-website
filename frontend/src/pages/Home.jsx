@@ -167,6 +167,7 @@ const Home = () => {
                             </div>
                         </div>
                         <div>
+                            <p style={{ color: 'green', fontWeight: 'bold' }}>[System Restored - v1.0]</p>
                             <h2 style={{ marginBottom: '20px', color: 'var(--primary-color)', textAlign: 'left' }}>{schoolConfig.principal.welcomeTitle}</h2>
                             <p>
                                 {schoolConfig.principal.welcomeMessage}
