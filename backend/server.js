@@ -633,6 +633,24 @@ app.get('/api/submissions/:regNumber', async (req, res) => {
     }
 });
 
+app.get('/api/submissions', async (req, res) => {
+    try {
+        const subs = await Submission.find().sort({ createdAt: -1 });
+        res.json(subs);
+    } catch (err) {
+        res.status(500).json({ message: 'Error' });
+    }
+});
+
+app.delete('/api/submissions/:id', async (req, res) => {
+    try {
+        await Submission.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ message: 'Error' });
+    }
+});
+
 // Config
 app.get('/api/config', async (req, res) => {
     try {

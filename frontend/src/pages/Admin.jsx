@@ -59,6 +59,27 @@ const Admin = () => {
     const [passwordInput, setPasswordInput] = useState('');
     const [authError, setAuthError] = useState('');
 
+    // Submissions States
+    const [submissions, setSubmissions] = useState([]);
+    const [submissionStatus, setSubmissionStatus] = useState('');
+
+    const fetchSubmissions = () => {
+        fetch(`${API_BASE_URL}/api/submissions`)
+            .then(res => res.json())
+            .then(data => setSubmissions(data))
+            .catch(err => console.error("Error fetching submissions:", err));
+    };
+
+    const handleSubmissionDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this submission?')) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/submissions/${id}`, { method: 'DELETE' });
+            if ((await res.json()).success) fetchSubmissions();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const handleLogin = (e) => {
         e.preventDefault();
         const adminPass = import.meta.env.VITE_ADMIN_PASSWORD || 'gbsss@jere/admin';
@@ -152,7 +173,20 @@ const Admin = () => {
         fetchExams();
         fetchContacts();
         fetchPins();
+        fetchSubmissions();
     }, []);
+
+    const tabs = [
+        { id: 'gallery', label: 'Gallery' },
+        { id: 'news', label: 'News' },
+        { id: 'students', label: 'Students' },
+        { id: 'assignments', label: 'Assignments' },
+        { id: 'exams', label: 'CBT Exams' },
+        { id: 'submissions', label: 'Student Submissions' },
+        { id: 'pins', label: 'Admission PINs' },
+        { id: 'messages', label: 'Messages' },
+        { id: 'settings', label: 'General Settings' }
+    ];
 
     if (!isAuthenticated) {
         return (
@@ -2132,6 +2166,19 @@ const styles = {
         borderRadius: '4px',
         cursor: 'pointer',
         fontSize: '0.9rem',
+    },
+    td: {
+        padding: '12px',
+        fontSize: '0.9rem',
+        borderBottom: '1px solid #eee',
+    },
+    th: {
+        padding: '12px',
+        fontSize: '0.9rem',
+        textAlign: 'left',
+        backgroundColor: '#f8f9fa',
+        fontWeight: 'bold',
+        borderBottom: '2px solid #dee2e6',
     }
 };
 

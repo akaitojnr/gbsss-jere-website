@@ -18,7 +18,34 @@ const StudentPortal = () => {
     const [examAnswers, setExamAnswers] = useState({});
     const [timeLeft, setTimeLeft] = useState(0);
     const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+    const [assignmentAnswers, setAssignmentAnswers] = useState({});
     const { config } = useConfig();
+
+    const handleAssignmentSubmit = async (a) => {
+        const answerText = assignmentAnswers[a.id];
+        if (!answerText || answerText.trim() === "") return alert("Please type an answer.");
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/submissions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentReg: student.regNumber,
+                    type: 'assignment',
+                    referenceId: a.id,
+                    content: answerText
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert("Assignment Submitted!");
+                setAssignmentAnswers(prev => ({ ...prev, [a.id]: '' }));
+                fetchDashboardData();
+            }
+        } catch (err) {
+            alert("Error submitting assignment.");
+        }
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -312,8 +339,18 @@ const StudentPortal = () => {
                                 <hr />
                                 <div style={{ marginTop: '15px' }}>
                                     <label><strong>Submit Answer:</strong></label>
-                                    <textarea style={{ ...styles.input, height: '100px', margin: '10px 0' }} placeholder="Type your answer here..."></textarea>
-                                    <button className="btn btn-primary" onClick={() => alert("Submission functionality would go here!")}>Submit Assignment</button>
+                                    <textarea
+                                        style={{ ...styles.input, height: '100px', margin: '10px 0' }}
+                                        placeholder="Type your answer here..."
+                                        value={assignmentAnswers[a.id] || ''}
+                                        onChange={(e) => setAssignmentAnswers(prev => ({ ...prev, [a.id]: e.target.value }))}
+                                    ></textarea>
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => handleAssignmentSubmit(a)}
+                                    >
+                                        Submit Assignment
+                                    </button>
                                 </div>
                             </div>
                         ))}
