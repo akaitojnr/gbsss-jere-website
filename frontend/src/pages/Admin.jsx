@@ -74,9 +74,16 @@ const Admin = () => {
         if (!window.confirm('Are you sure you want to delete this submission?')) return;
         try {
             const res = await fetch(`${API_BASE_URL}/api/submissions/${id}`, { method: 'DELETE' });
-            if ((await res.json()).success) fetchSubmissions();
+            const data = await res.json();
+            if (data.success) {
+                alert('Submission deleted successfully!');
+                fetchSubmissions();
+            } else {
+                alert('Failed to delete: ' + (data.message || 'Unknown error'));
+            }
         } catch (err) {
-            console.error(err);
+            console.error("Delete error:", err);
+            alert('Error connecting to server. Please try again.');
         }
     };
 
