@@ -681,7 +681,7 @@ const Admin = () => {
 
             {/* Tab Navigation */}
             <div style={styles.tabs}>
-                {['gallery', 'school', 'news', 'about', 'academics', 'admissions', 'pins', 'contact', 'messages', 'students', 'assignments', 'cbt'].map(tab => (
+                {['gallery', 'school', 'news', 'about', 'academics', 'admissions', 'pins', 'contact', 'messages', 'students', 'assignments', 'cbt', 'submissions'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -699,6 +699,7 @@ const Admin = () => {
                         {tab === 'students' && 'Students & Results'}
                         {tab === 'assignments' && 'Assignments'}
                         {tab === 'cbt' && 'CBT Exams'}
+                        {tab === 'submissions' && 'Student Submissions'}
                     </button>
                 ))}
             </div>
@@ -2066,6 +2067,68 @@ const Admin = () => {
                                             </td>
                                             <td style={{ padding: '12px' }}>
                                                 <button onClick={() => handleContactDelete(c.id)} style={styles.deleteBtn}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Student Submissions Tab */}
+            {activeTab === 'submissions' && (
+                <div style={styles.card}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h2>Student Submissions</h2>
+                        <button onClick={fetchSubmissions} className="btn btn-secondary">Refresh Submissions</button>
+                    </div>
+                    {submissions.length === 0 ? (
+                        <p style={{ textAlign: 'center', padding: '30px', color: '#666' }}>No submissions found.</p>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th style={styles.th}>Date</th>
+                                        <th style={styles.th}>Student Reg No</th>
+                                        <th style={styles.th}>Type</th>
+                                        <th style={styles.th}>Reference (ID)</th>
+                                        <th style={styles.th}>Result/Content</th>
+                                        <th style={styles.th}>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {submissions.map(sub => (
+                                        <tr key={sub.id || sub._id}>
+                                            <td style={styles.td}>{new Date(sub.submittedAt || sub.createdAt).toLocaleString()}</td>
+                                            <td style={styles.td}>{sub.studentReg}</td>
+                                            <td style={styles.td}>
+                                                <span style={{
+                                                    padding: '2px 8px',
+                                                    borderRadius: '4px',
+                                                    backgroundColor: sub.type === 'cbt' ? '#e1f5fe' : '#fff3e0',
+                                                    color: sub.type === 'cbt' ? '#0277bd' : '#ef6c00',
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 'bold',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {sub.type}
+                                                </span>
+                                            </td>
+                                            <td style={styles.td}>{sub.referenceId}</td>
+                                            <td style={styles.td}>
+                                                {sub.type === 'cbt' ? (
+                                                    <strong>Score: {sub.score} / {sub.total}</strong>
+                                                ) : (
+                                                    <div style={{ maxHeight: '100px', overflowY: 'auto', fontSize: '0.9rem', background: '#f8f9fa', padding: '8px', borderRadius: '4px' }}>
+                                                        {sub.content}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td style={styles.td}>
+                                                <button onClick={() => handleSubmissionDelete(sub._id || sub.id)} className="btn" style={styles.deleteBtn}>Delete</button>
                                             </td>
                                         </tr>
                                     ))}
