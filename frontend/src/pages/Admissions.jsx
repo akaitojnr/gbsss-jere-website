@@ -22,7 +22,7 @@ const Admissions = () => {
         setValidating(true);
         try {
             console.log("Submitting PIN:", pin.trim());
-            const res = await fetch(`${API_URL}/admission-pins/validate`, {
+            const res = await fetch(`${API_URL}/api/admission-pins/validate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code: pin.trim() })
