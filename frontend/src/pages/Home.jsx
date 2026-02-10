@@ -181,7 +181,9 @@ const Home = () => {
                             </div>
                         </div>
                         <div>
-                            <h2 style={{ marginBottom: '20px', color: 'var(--primary-color)', textAlign: 'left' }}>{schoolConfig.principal.welcomeTitle}</h2>
+                            <h2 style={{ marginBottom: '20px', color: 'var(--primary-color)', textAlign: 'left' }}>
+                                {(schoolConfig.principal.welcomeTitle || "").replace(/\[system Restored -V1\.0\]/gi, "")}
+                            </h2>
                             <p>
                                 {schoolConfig.principal.welcomeMessage}
                             </p>
