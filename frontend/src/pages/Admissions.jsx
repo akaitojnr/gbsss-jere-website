@@ -182,15 +182,18 @@ const Admissions = () => {
                                     {candidate && (
                                         <div style={{
                                             marginTop: '10px',
-                                            padding: '5px',
-                                            border: '1px dashed #004d40',
+                                            padding: '8px',
+                                            border: '2px solid #004d40',
+                                            borderRadius: '4px',
                                             display: 'inline-block',
-                                            backgroundColor: '#e0f2f1'
+                                            backgroundColor: '#e0f2f1',
+                                            WebkitPrintColorAdjust: 'exact',
+                                            printColorAdjust: 'exact'
                                         }}>
-                                            <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                            <p style={{ margin: 0, fontWeight: 'bold', fontSize: '1rem', color: '#004d40' }}>
                                                 Official Admission Form for: {candidate.candidateName || 'N/A'}
                                             </p>
-                                            <p style={{ margin: 0, fontSize: '0.8rem' }}>
+                                            <p style={{ margin: 0, fontSize: '0.9rem', color: '#000' }}>
                                                 PF Number (PIN): {candidate.code}
                                             </p>
                                         </div>
