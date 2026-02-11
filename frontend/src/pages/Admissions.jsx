@@ -278,7 +278,7 @@ const Admissions = () => {
                         width: 100%;
                     }
                     .no-print { display: none !important; }
-                    @page { size: A4; margin: 10mm; }
+                    @page { size: A4; margin: 5mm; }
                 }
                 `}
             </style>
@@ -313,80 +313,87 @@ const styles = {
     },
     formBorder: {
         border: '2px solid black',
-        padding: '20px',
-        minHeight: '270mm', // Approximate A4 height minus margins
+        padding: '15px', // Reduced from 20px
+        minHeight: '260mm', // Adjusted height
     },
     formHeader: {
         display: 'flex',
         alignItems: 'center',
         borderBottom: '2px solid black',
-        paddingBottom: '15px',
-        marginBottom: '15px',
+        paddingBottom: '10px', // Reduced from 15px
+        marginBottom: '10px', // Reduced from 15px
     },
     formLogo: {
-        width: '100px',
-        height: '100px',
+        width: '80px', // Reduced from 100px
+        height: '80px', // Reduced from 100px
         objectFit: 'contain',
     },
     schoolName: {
-        fontSize: '1.6rem',
+        fontSize: '1.4rem', // Reduced from 1.6rem
         margin: '0',
         color: '#004d40',
         textTransform: 'uppercase',
+        lineHeight: '1.1',
     },
     motto: {
-        fontSize: '1rem',
+        fontSize: '0.9rem', // Reduced from 1rem
         fontStyle: 'italic',
-        margin: '5px 0',
-    },
-    contact: {
-        fontSize: '0.85rem',
         margin: '2px 0',
     },
+    contact: {
+        fontSize: '0.75rem', // Reduced from 0.85rem
+        margin: '1px 0',
+    },
     passportBox: {
-        width: '120px',
-        height: '130px',
+        width: '100px', // Reduced from 120px
+        height: '110px', // Reduced from 130px
         border: '1px solid black',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
-        fontSize: '0.7rem',
+        fontSize: '0.6rem',
         padding: '5px',
         marginLeft: '10px',
     },
     formTitle: {
         textAlign: 'center',
         textDecoration: 'underline',
-        fontSize: '1.4rem',
-        margin: '15px 0',
+        fontSize: '1.2rem', // Reduced from 1.4rem
+        margin: '10px 0', // Reduced from 15px
+        fontWeight: 'bold',
     },
     formSection: {
-        marginBottom: '20px',
+        marginBottom: '12px', // Reduced from 20px
     },
     sectionHeading: {
         backgroundColor: '#f0f0f0',
-        padding: '5px 10px',
-        fontSize: '1rem',
+        padding: '3px 8px', // Reduced from 5px 10px
+        fontSize: '0.9rem', // Reduced from 1rem
         border: '1px solid black',
-        marginBottom: '10px',
+        marginBottom: '8px', // Reduced from 10px
+        fontWeight: 'bold',
+        WebkitPrintColorAdjust: 'exact', // Ensure generic headers verify print
+        printColorAdjust: 'exact'
     },
     grid: {
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gap: '15px',
+        gap: '10px', // Reduced from 15px
     },
     field: {
-        fontSize: '0.95rem',
+        fontSize: '0.85rem', // Reduced from 0.95rem
         fontWeight: 'bold',
         display: 'flex',
         alignItems: 'flex-end',
+        marginBottom: '4px', // Added tight margin
     },
     line: {
         flex: 1,
         borderBottom: '1px dotted black',
-        marginLeft: '10px',
-        height: '1.2rem',
+        marginLeft: '5px', // Reduced from 10px
+        height: '1rem', // Reduced from 1.2rem
+        minWidth: '50px',
     }
 };
 
