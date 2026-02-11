@@ -9,10 +9,21 @@ const Admissions = () => {
     const [error, setError] = useState('');
     const [validating, setValidating] = useState(false);
 
+    const [candidate, setCandidate] = useState(null);
+
     useEffect(() => {
         const auth = sessionStorage.getItem('admission_auth');
+        const storedCandidate = sessionStorage.getItem('admission_candidate');
+
         if (auth === 'true') {
             setIsAuthenticated(true);
+        }
+        if (storedCandidate) {
+            try {
+                setCandidate(JSON.parse(storedCandidate));
+            } catch (e) {
+                console.error("Error parsing candidate info", e);
+            }
         }
     }, []);
 
@@ -21,7 +32,6 @@ const Admissions = () => {
         setError('');
         setValidating(true);
         try {
-
             const res = await fetch(`${API_URL}/api/admission-pins/validate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -30,7 +40,11 @@ const Admissions = () => {
             const data = await res.json();
             if (data.success) {
                 setIsAuthenticated(true);
+                // Store auth and candidate details
                 sessionStorage.setItem('admission_auth', 'true');
+                if (data.pin) {
+                    sessionStorage.setItem('admission_candidate', JSON.stringify(data.pin));
+                }
             } else {
                 setError(data.message || 'Invalid PIN');
             }
@@ -132,6 +146,24 @@ const Admissions = () => {
                                     <p style={styles.motto}>{schoolConfig.motto}</p>
                                     <p style={styles.contact}>{schoolConfig.contact.address}</p>
                                     <p style={styles.contact}>{schoolConfig.contact.phone} | {schoolConfig.contact.email}</p>
+
+                                    {/* Watermark/Official Details */}
+                                    {candidate && (
+                                        <div style={{
+                                            marginTop: '10px',
+                                            padding: '5px',
+                                            border: '1px dashed #004d40',
+                                            display: 'inline-block',
+                                            backgroundColor: '#e0f2f1'
+                                        }}>
+                                            <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem' }}>
+                                                Official Admission Form for: {candidate.candidateName || 'N/A'}
+                                            </p>
+                                            <p style={{ margin: 0, fontSize: '0.8rem' }}>
+                                                PF Number (PIN): {candidate.code}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                                 <div style={styles.passportBox}>AFFIX PASSPORT PHOTOGRAPH HERE</div>
                             </div>
