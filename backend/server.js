@@ -736,12 +736,13 @@ app.post('/api/admission-pins/validate', async (req, res) => {
         if (!pin) {
             return res.status(404).json({ success: false, message: 'Invalid PIN' });
         }
-        // Allow re-use of PINs for printing forms. 
-        // We still mark it as used if it wasn't already.
-        if (!pin.isUsed) {
-            pin.isUsed = true;
-            await pin.save();
+        if (pin.isUsed) {
+            return res.status(400).json({ success: false, message: 'PIN already used' });
         }
+
+        // Mark as used when validated
+        pin.isUsed = true;
+        await pin.save();
 
         res.json({ success: true, pin });
     } catch (err) {

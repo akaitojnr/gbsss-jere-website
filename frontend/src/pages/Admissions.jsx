@@ -60,6 +60,7 @@ const Admissions = () => {
                 sessionStorage.setItem('admission_auth', 'true');
                 if (data.pin) {
                     sessionStorage.setItem('admission_candidate', JSON.stringify(data.pin));
+                    setCandidate(data.pin); // Update state immediately
                 }
             } else {
                 setError(data.message || 'Invalid PIN');
