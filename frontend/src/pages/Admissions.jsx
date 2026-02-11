@@ -16,16 +16,32 @@ const Admissions = () => {
         const storedCandidate = sessionStorage.getItem('admission_candidate');
 
         if (auth === 'true') {
-            setIsAuthenticated(true);
-        }
-        if (storedCandidate) {
-            try {
-                setCandidate(JSON.parse(storedCandidate));
-            } catch (e) {
-                console.error("Error parsing candidate info", e);
+            if (storedCandidate) {
+                try {
+                    setCandidate(JSON.parse(storedCandidate));
+                    setIsAuthenticated(true);
+                } catch (e) {
+                    console.error("Error parsing candidate info", e);
+                    // Corrupt data, force logout
+                    sessionStorage.removeItem('admission_auth');
+                    sessionStorage.removeItem('admission_candidate');
+                    setIsAuthenticated(false);
+                }
+            } else {
+                // Stale session (authenticated but no candidate info), force logout to get fresh data
+                sessionStorage.removeItem('admission_auth');
+                setIsAuthenticated(false);
             }
         }
     }, []);
+
+    const handleLogout = () => {
+        sessionStorage.removeItem('admission_auth');
+        sessionStorage.removeItem('admission_candidate');
+        setIsAuthenticated(false);
+        setCandidate(null);
+        setPin('');
+    };
 
     const handlePinSubmit = async (e) => {
         e.preventDefault();
@@ -128,6 +144,21 @@ const Admissions = () => {
                                 <button onClick={handlePrint} className="btn btn-primary">
                                     🖨️ Print / Download Admission Form
                                 </button>
+                                <div style={{ marginTop: '15px' }}>
+                                    <button
+                                        onClick={handleLogout}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#d32f2f',
+                                            textDecoration: 'underline',
+                                            cursor: 'pointer',
+                                            fontSize: '0.9rem'
+                                        }}
+                                    >
+                                        Log Out / Enter Different PIN
+                                    </button>
+                                </div>
                                 <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '10px' }}>
                                     Click to open the professional form for printing or saving as PDF.
                                 </p>
