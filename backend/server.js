@@ -550,25 +550,90 @@ app.delete('/api/cbt/:id', async (req, res) => {
 });
 
 app.post('/api/import-questions', upload.single('file'), async (req, res) => {
-    if (!req.file) return res.status(400).json({ message: 'No file' });
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
     try {
+        console.log(`Processing file: ${req.file.path}`);
         const workbook = XLSX.readFile(req.file.path);
-        const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
-        const questions = data.map(row => {
-            const correctChar = (row['Correct Answer'] || row['Correct'] || '').toString().trim().toUpperCase();
-            const correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctChar);
+        if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+            throw new Error('Invalid Excel/CSV file: No sheets found');
+        }
+
+        const sheetName = workbook.SheetNames[0];
+        const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+        console.log(`Extracted ${data.length} rows from sheet: ${sheetName}`);
+
+        if (!data || data.length === 0) {
+            throw new Error('The uploaded file is empty or could not be parsed.');
+        }
+
+        // Validate headers (optional but good for debugging)
+        const firstRow = data[0];
+        const requiredHeaders = ['Question', 'Option A', 'Option B', 'Option C', 'Option D', 'Correct Answer'];
+        // loosely check if at least 'Question' exists
+        if (!('Question' in firstRow)) {
+            console.warn('Warning: "Question" column not found in first row. Headers found:', Object.keys(firstRow));
+        }
+
+        const questions = data.map((row, index) => {
+            // Flexible column matching
+            const questionText = row['Question'] || row['question'] || '';
+            const correctChar = (row['Correct Answer'] || row['Correct'] || row['correct'] || '').toString().trim().toUpperCase();
+
+            // Map A,B,C,D to 0,1,2,3
+            let correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctChar);
+
+            // Fallback: if user entered 1, 2, 3, 4 instead of A, B, C, D
+            if (correctIndex === -1 && !isNaN(parseInt(correctChar))) {
+                correctIndex = parseInt(correctChar) - 1;
+            }
+
+            // Fallback: Default to 0 (Option A) if invalid, but log warning
+            if (correctIndex < 0 || correctIndex > 3) {
+                console.warn(`Row ${index + 1}: Invalid correct answer "${correctChar}". Defaulting to Option A.`);
+                correctIndex = 0;
+            }
+
             return {
-                question: row['Question'] || '',
-                options: [row['Option A'], row['Option B'], row['Option C'], row['Option D']],
-                correct: correctIndex !== -1 ? correctIndex : 0
+                question: questionText,
+                options: [
+                    (row['Option A'] || row['option a'] || '').toString(),
+                    (row['Option B'] || row['option b'] || '').toString(),
+                    (row['Option C'] || row['option c'] || '').toString(),
+                    (row['Option D'] || row['option d'] || '').toString()
+                ],
+                correct: correctIndex
             };
-        }).filter(q => q.question);
+        }).filter(q => q.question && q.question.trim() !== '');
 
-        fs.unlinkSync(req.file.path);
+        if (questions.length === 0) {
+            throw new Error('No valid questions found. Please check column headers (Question, Option A, Option B, Option C, Option D, Correct Answer).');
+        }
+
+        // Cleanup file
+        try {
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        } catch (cleanupErr) {
+            console.error('Failed to delete temp file:', cleanupErr);
+        }
+
+        console.log(`Successfully parsed ${questions.length} questions.`);
         res.json({ success: true, questions });
+
     } catch (err) {
-        res.status(500).json({ message: 'Error' });
+        console.error('CBT Import Error:', err);
+        // Ensure file is deleted even on error
+        if (req.file && fs.existsSync(req.file.path)) {
+            try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'Import failed: ' + err.message,
+            details: err.stack
+        });
     }
 });
 
