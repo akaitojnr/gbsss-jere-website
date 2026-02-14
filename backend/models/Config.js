@@ -34,6 +34,8 @@ const configSchema = new mongoose.Schema({
         desc: String
     }],
     academics: {
+        currentSession: String,
+        currentTerm: String,
         sss: {
             science: [String]
         },

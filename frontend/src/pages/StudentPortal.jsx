@@ -267,8 +267,8 @@ const StudentPortal = () => {
                                     <div style={styles.detailItem}><strong>NAME:</strong> {student.name}</div>
                                     <div style={styles.detailItem}><strong>REG NO:</strong> {student.regNumber}</div>
                                     <div style={styles.detailItem}><strong>CLASS:</strong> {student.class}</div>
-                                    <div style={styles.detailItem}><strong>TERM:</strong> First Term</div>
-                                    <div style={styles.detailItem}><strong>SESSION:</strong> 2025/2026</div>
+                                    <div style={styles.detailItem}><strong>TERM:</strong> {config.academics?.currentTerm || 'First Term'}</div>
+                                    <div style={styles.detailItem}><strong>SESSION:</strong> {config.academics?.currentSession || '2025/2026'}</div>
                                     <div style={styles.detailItem}><strong>STATUS:</strong> PROMOTED</div>
                                 </div>
 

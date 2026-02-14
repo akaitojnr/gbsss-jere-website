@@ -1289,6 +1289,38 @@ const Admin = () => {
                 <div style={{ ...styles.card, maxWidth: '800px', margin: '0 auto' }}>
                     <h2>Academics Content</h2>
                     <form onSubmit={handleSaveSettings}>
+                        <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f0f4c3', borderRadius: '8px' }}>
+                            <h3 style={{ marginTop: 0 }}>Current Academic Period</h3>
+                            <div style={{ display: 'flex', gap: '20px' }}>
+                                <div style={{ ...styles.formGroup, flex: 1 }}>
+                                    <label style={styles.label}>Current Session</label>
+                                    <input
+                                        type="text"
+                                        value={settings.academics.currentSession || ''}
+                                        onChange={(e) => setSettings(prev => ({
+                                            ...prev,
+                                            academics: { ...prev.academics, currentSession: e.target.value }
+                                        }))}
+                                        style={styles.input}
+                                        placeholder="e.g. 2025/2026"
+                                    />
+                                </div>
+                                <div style={{ ...styles.formGroup, flex: 1 }}>
+                                    <label style={styles.label}>Current Term</label>
+                                    <input
+                                        type="text"
+                                        value={settings.academics.currentTerm || ''}
+                                        onChange={(e) => setSettings(prev => ({
+                                            ...prev,
+                                            academics: { ...prev.academics, currentTerm: e.target.value }
+                                        }))}
+                                        style={styles.input}
+                                        placeholder="e.g. First Term"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         <h3>Science Subjects</h3>
                         {settings.academics.sss.science.map((subject, index) => (
                             <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
