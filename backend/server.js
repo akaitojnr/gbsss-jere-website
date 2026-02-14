@@ -175,7 +175,7 @@ app.post('/api/gallery', (req, res) => {
             const imageUrl = isCloudinaryConfigured ? file.path : `/uploads/${file.filename}`;
 
             const newImage = new Gallery({
-                id: count + 1,
+                id: Date.now(),
                 title,
                 url: imageUrl,
                 public_id: isCloudinaryConfigured ? file.filename : null
@@ -238,9 +238,8 @@ app.get('/api/news', async (req, res) => {
 app.post('/api/news', async (req, res) => {
     const { title, date, content } = req.body;
     try {
-        const count = await News.countDocuments();
         const newArticle = new News({
-            id: count + 1,
+            id: Date.now(),
             title,
             date,
             content
@@ -496,9 +495,8 @@ app.get('/api/assignments', async (req, res) => {
 
 app.post('/api/assignments', async (req, res) => {
     try {
-        const count = await Assignment.countDocuments();
         const newAssignment = new Assignment({
-            id: count + 1, // Or Date.now() if preferred
+            id: Date.now(),
             ...req.body
         });
         await newAssignment.save();
@@ -531,15 +529,16 @@ app.get('/api/cbt', async (req, res) => {
 
 app.post('/api/cbt', async (req, res) => {
     try {
-        const count = await CBTExam.countDocuments();
+        console.log('Received CBT Exam:', JSON.stringify(req.body, null, 2));
         const newExam = new CBTExam({
-            id: count + 1,
+            id: Date.now(),
             ...req.body
         });
         await newExam.save();
         res.json({ success: true, exam: newExam });
     } catch (err) {
-        res.status(500).json({ message: 'Error' });
+        console.error('Error saving exam:', err);
+        res.status(500).json({ success: false, message: 'Error saving exam: ' + err.message });
     }
 });
 
