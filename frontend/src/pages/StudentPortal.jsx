@@ -688,7 +688,8 @@ const printStyles = `
         width: 100%;
         margin: 0;
         padding: 20px;
-        border: none;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
     .no-print {
         display: none !important;
