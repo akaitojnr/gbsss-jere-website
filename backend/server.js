@@ -138,6 +138,9 @@ if (isCloudinaryConfigured) {
 
 const upload = multer({ storage });
 
+// Memory Storage for Imports (to avoid disk write issues on serverless/Vercel)
+const uploadMemory = multer({ storage: multer.memoryStorage() });
+
 // Routes
 
 // Get Gallery
@@ -365,12 +368,12 @@ app.delete('/api/students/:regNumber', async (req, res) => {
 });
 
 // Import Results from CSV
-app.post('/api/import-results', upload.single('csv'), async (req, res) => {
+app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => {
     const file = req.file;
     if (!file) return res.status(400).json({ message: 'No file' });
 
     try {
-        const lines = fs.readFileSync(file.path, 'utf8').split('\n').filter(l => l.trim());
+        const lines = file.buffer.toString('utf8').split('\n').filter(l => l.trim());
         if (lines.length < 2) return res.status(400).json({ message: 'Invalid CSV' });
 
         const headers = lines[0].split(',').map(h => h.trim());
@@ -416,7 +419,7 @@ app.post('/api/import-results', upload.single('csv'), async (req, res) => {
             importedCount++;
         }
 
-        fs.unlinkSync(file.path);
+        // No file to unlink with memory storage
         res.json({ success: true, message: `Imported ${importedCount} students`, count: importedCount });
 
     } catch (err) {
@@ -549,12 +552,12 @@ app.delete('/api/cbt/:id', async (req, res) => {
     }
 });
 
-app.post('/api/import-questions', upload.single('file'), async (req, res) => {
+app.post('/api/import-questions', uploadMemory.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
     try {
-        console.log(`Processing file: ${req.file.path}`);
-        const workbook = XLSX.readFile(req.file.path);
+        console.log(`Processing file from memory buffer (size: ${req.file.size} bytes)`);
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
 
         if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
             throw new Error('Invalid Excel/CSV file: No sheets found');
@@ -612,22 +615,14 @@ app.post('/api/import-questions', upload.single('file'), async (req, res) => {
             throw new Error('No valid questions found. Please check column headers (Question, Option A, Option B, Option C, Option D, Correct Answer).');
         }
 
-        // Cleanup file
-        try {
-            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-        } catch (cleanupErr) {
-            console.error('Failed to delete temp file:', cleanupErr);
-        }
+        // No file cleanup needed for memory storage
 
         console.log(`Successfully parsed ${questions.length} questions.`);
         res.json({ success: true, questions });
 
     } catch (err) {
         console.error('CBT Import Error:', err);
-        // Ensure file is deleted even on error
-        if (req.file && fs.existsSync(req.file.path)) {
-            try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
-        }
+        // No file cleanup needed on error either
 
         res.status(500).json({
             success: false,
