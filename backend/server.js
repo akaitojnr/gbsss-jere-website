@@ -582,7 +582,15 @@ app.post('/api/import-questions', uploadMemory.single('file'), async (req, res) 
         const questions = data.map((row, index) => {
             // Flexible column matching
             const questionText = row['Question'] || row['question'] || '';
-            const correctValue = (row['Correct Answer'] || row['Correct'] || row['correct'] || '').toString().trim();
+            // Match against various common header names including the one in the template
+            const correctValue = (
+                row['Correct Answer (A/B/C/D)'] ||
+                row['Correct Answer'] ||
+                row['Correct'] ||
+                row['correct'] ||
+                ''
+            ).toString().trim();
+
             const correctCharUpper = correctValue.toUpperCase();
 
             // Map A,B,C,D to 0,1,2,3
@@ -594,19 +602,18 @@ app.post('/api/import-questions', uploadMemory.single('file'), async (req, res) 
             }
 
             const options = [
-                (row['Option A'] || row['option a'] || '').toString(),
-                (row['Option B'] || row['option b'] || '').toString(),
-                (row['Option C'] || row['option c'] || '').toString(),
-                (row['Option D'] || row['option d'] || '').toString()
+                (row['Option A'] || row['option a'] || '').toString().trim(),
+                (row['Option B'] || row['option b'] || '').toString().trim(),
+                (row['Option C'] || row['option c'] || '').toString().trim(),
+                (row['Option D'] || row['option d'] || '').toString().trim()
             ];
 
-            // PROPOSED ADDITION: Check if correctValue matches any option text (case-insensitive)
+            // Match by text (case-insensitive)
             if (correctIndex === -1 && correctValue !== '') {
                 const lowerCorrect = correctValue.toLowerCase();
-                const foundIndex = options.findIndex(opt => opt.toLowerCase().trim() === lowerCorrect);
+                const foundIndex = options.findIndex(opt => opt.toLowerCase() === lowerCorrect);
                 if (foundIndex !== -1) {
                     correctIndex = foundIndex;
-                    console.log(`Matched "${correctValue}" to Option ${['A', 'B', 'C', 'D'][foundIndex]}`);
                 }
             }
 
