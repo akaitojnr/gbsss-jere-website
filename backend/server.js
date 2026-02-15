@@ -592,13 +592,24 @@ app.post('/api/import-questions', uploadMemory.single('file'), async (req, res) 
             ).toString().trim();
 
             const correctCharUpper = correctValue.toUpperCase();
+            let correctIndex = -1;
 
-            // Map A,B,C,D to 0,1,2,3
-            let correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctCharUpper);
-
-            // Fallback: if user entered 1, 2, 3, 4 instead of A, B, C, D
-            if (correctIndex === -1 && !isNaN(parseInt(correctValue))) {
-                correctIndex = parseInt(correctValue) - 1;
+            // 1. Exact A-D
+            if (['A', 'B', 'C', 'D'].includes(correctCharUpper)) {
+                correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctCharUpper);
+            }
+            // 2. "Option A", "Option B" (Case insensitive)
+            else if (correctCharUpper.startsWith("OPTION ") && ["A", "B", "C", "D"].includes(correctCharUpper.split(" ")[1])) {
+                correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctCharUpper.split(" ")[1]);
+            }
+            // 3. "A.", "B)", "A " (Case insensitive)
+            else if (/^[A-D][.)]?$/.test(correctCharUpper)) {
+                correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctCharUpper.charAt(0));
+            }
+            // 4. Numeric 1-4
+            else if (!isNaN(parseInt(correctValue))) {
+                const val = parseInt(correctValue);
+                if (val >= 1 && val <= 4) correctIndex = val - 1;
             }
 
             const options = [
