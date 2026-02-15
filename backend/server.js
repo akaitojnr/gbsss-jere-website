@@ -31,17 +31,23 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/school_db';
 
 // Connect to MongoDB (with connection pooling for serverless)
-if (mongoose.connection.readyState === 0) {
-    mongoose.connect(MONGO_URI, {
-        serverSelectionTimeoutMS: 5000,
-        socketTimeoutMS: 45000,
-    })
-        .then(() => console.log('Connected to MongoDB'))
-        .catch(err => {
-            console.error('MongoDB connection error:', err);
-            console.log('Ensure MongoDB URI is set in environment variables!');
+const connectDB = async () => {
+    if (mongoose.connection.readyState >= 1) {
+        return;
+    }
+    try {
+        await mongoose.connect(MONGO_URI, {
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
         });
-}
+        console.log('Connected to MongoDB');
+    } catch (err) {
+        console.error('MongoDB connection error:', err);
+    }
+};
+
+// Initialize connection
+connectDB();
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -49,7 +55,8 @@ app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
-app.get('/api/ping', (req, res) => {
+app.get('/api/ping', async (req, res) => {
+    await connectDB();
     res.json({ success: true, message: 'pong', time: new Date().toISOString() });
 });
 
@@ -79,7 +86,8 @@ app.get('/api/cloudinary-test', async (req, res) => {
 });
 
 // DB Status check
-app.get('/api/db-status', (req, res) => {
+app.get('/api/db-status', async (req, res) => {
+    await connectDB();
     const state = mongoose.connection.readyState;
     const states = {
         0: 'disconnected',
@@ -145,6 +153,7 @@ const uploadMemory = multer({ storage: multer.memoryStorage() });
 
 // Get Gallery
 app.get('/api/gallery', async (req, res) => {
+    await connectDB();
     try {
         const gallery = await Gallery.find().sort({ createdAt: -1 });
         res.json(gallery);
@@ -170,6 +179,7 @@ app.post('/api/gallery', (req, res) => {
         }
 
         try {
+            await connectDB();
             const count = await Gallery.countDocuments();
             // If it's local storage, we want a relative URL. If Cloudinary, it's the full path.
             const imageUrl = isCloudinaryConfigured ? file.path : `/uploads/${file.filename}`;
@@ -191,6 +201,7 @@ app.post('/api/gallery', (req, res) => {
 
 // Delete from Gallery
 app.delete('/api/gallery/:id', async (req, res) => {
+    await connectDB();
     try {
         const image = await Gallery.findOne({ id: req.params.id });
         if (!image && mongoose.isValidObjectId(req.params.id)) {
@@ -226,6 +237,7 @@ app.delete('/api/gallery/:id', async (req, res) => {
 
 // Get News
 app.get('/api/news', async (req, res) => {
+    await connectDB();
     try {
         const news = await News.find().sort({ createdAt: -1 });
         res.json(news);
@@ -236,6 +248,7 @@ app.get('/api/news', async (req, res) => {
 
 // Add News Article
 app.post('/api/news', async (req, res) => {
+    await connectDB();
     const { title, date, content } = req.body;
     try {
         const newArticle = new News({
@@ -253,6 +266,7 @@ app.post('/api/news', async (req, res) => {
 
 // Update News Article
 app.put('/api/news/:id', async (req, res) => {
+    await connectDB();
     const { id } = req.params;
     const { title, date, content } = req.body;
     try {
@@ -271,6 +285,7 @@ app.put('/api/news/:id', async (req, res) => {
 
 // Delete News Article
 app.delete('/api/news/:id', async (req, res) => {
+    await connectDB();
     try {
         const result = await News.deleteOne({ id: req.params.id });
         if (result.deletedCount === 0) return res.status(404).json({ message: 'Not found' });
@@ -282,6 +297,7 @@ app.delete('/api/news/:id', async (req, res) => {
 
 // Student Login
 app.post('/api/login', async (req, res) => {
+    await connectDB();
     const { regNumber, password } = req.body;
     try {
         const student = await Student.findOne({ regNumber });
@@ -299,6 +315,7 @@ app.post('/api/login', async (req, res) => {
 
 // Get All Students (Admin)
 app.get('/api/students', async (req, res) => {
+    await connectDB();
     try {
         const students = await Student.find({}, '-password'); // Exclude password
         res.json(students);
@@ -309,6 +326,7 @@ app.get('/api/students', async (req, res) => {
 
 // Add New Student
 app.post('/api/students', async (req, res) => {
+    await connectDB();
     const { regNumber, password, name, class: studentClass, results } = req.body;
     if (!regNumber || !password || !name || !studentClass) {
         return res.status(400).json({ success: false, message: 'Missing fields' });
@@ -336,6 +354,7 @@ app.post('/api/students', async (req, res) => {
 
 // Update Student
 app.put('/api/students/:regNumber', async (req, res) => {
+    await connectDB();
     const { regNumber } = req.params;
     const { password, name, class: studentClass, results } = req.body;
 
@@ -358,6 +377,7 @@ app.put('/api/students/:regNumber', async (req, res) => {
 
 // Delete Student
 app.delete('/api/students/:regNumber', async (req, res) => {
+    await connectDB();
     try {
         await Student.deleteOne({ regNumber: req.params.regNumber });
         res.json({ success: true, message: 'Student deleted' });
@@ -368,6 +388,7 @@ app.delete('/api/students/:regNumber', async (req, res) => {
 
 // Import Results from CSV
 app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => {
+    await connectDB();
     const file = req.file;
     if (!file) return res.status(400).json({ message: 'No file' });
 
@@ -428,6 +449,7 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
 
 // --- Contact API ---
 app.get('/api/contacts', async (req, res) => {
+    await connectDB();
     try {
         const contacts = await Contact.find().sort({ date: -1 });
         res.json(contacts);
@@ -437,6 +459,7 @@ app.get('/api/contacts', async (req, res) => {
 });
 
 app.delete('/api/contacts/:id', async (req, res) => {
+    await connectDB();
     try {
         await Contact.deleteOne({ id: req.params.id });
         res.json({ success: true, message: 'Deleted' });
@@ -446,6 +469,7 @@ app.delete('/api/contacts/:id', async (req, res) => {
 });
 
 app.post('/api/contact', async (req, res) => {
+    await connectDB();
     const { name, email, message } = req.body;
     try {
         const newContact = new Contact({
@@ -483,6 +507,7 @@ app.post('/api/contact', async (req, res) => {
 
 // --- Assignments API ---
 app.get('/api/assignments', async (req, res) => {
+    await connectDB();
     const { studentClass } = req.query;
     try {
         const query = studentClass ? { class: studentClass } : {};
@@ -494,6 +519,7 @@ app.get('/api/assignments', async (req, res) => {
 });
 
 app.post('/api/assignments', async (req, res) => {
+    await connectDB();
     try {
         const newAssignment = new Assignment({
             id: Date.now(),
@@ -507,6 +533,7 @@ app.post('/api/assignments', async (req, res) => {
 });
 
 app.delete('/api/assignments/:id', async (req, res) => {
+    await connectDB();
     try {
         await Assignment.deleteOne({ id: req.params.id });
         res.json({ success: true });
@@ -561,6 +588,7 @@ const shuffleExam = (exam) => {
 };
 
 app.get('/api/cbt', async (req, res) => {
+    await connectDB();
     const { studentClass } = req.query;
     try {
         const query = studentClass ? { class: studentClass } : {};
@@ -577,6 +605,7 @@ app.get('/api/cbt', async (req, res) => {
 });
 
 app.post('/api/cbt', async (req, res) => {
+    await connectDB();
     try {
         console.log('Received CBT Exam:', JSON.stringify(req.body, null, 2));
         const newExam = new CBTExam({
@@ -592,6 +621,7 @@ app.post('/api/cbt', async (req, res) => {
 });
 
 app.delete('/api/cbt/:id', async (req, res) => {
+    await connectDB();
     try {
         await CBTExam.deleteOne({ id: req.params.id });
         res.json({ success: true });
@@ -601,6 +631,7 @@ app.delete('/api/cbt/:id', async (req, res) => {
 });
 
 app.post('/api/import-questions', uploadMemory.single('file'), async (req, res) => {
+    await connectDB();
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
     try {
