@@ -582,30 +582,43 @@ app.post('/api/import-questions', uploadMemory.single('file'), async (req, res) 
         const questions = data.map((row, index) => {
             // Flexible column matching
             const questionText = row['Question'] || row['question'] || '';
-            const correctChar = (row['Correct Answer'] || row['Correct'] || row['correct'] || '').toString().trim().toUpperCase();
+            const correctValue = (row['Correct Answer'] || row['Correct'] || row['correct'] || '').toString().trim();
+            const correctCharUpper = correctValue.toUpperCase();
 
             // Map A,B,C,D to 0,1,2,3
-            let correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctChar);
+            let correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctCharUpper);
 
             // Fallback: if user entered 1, 2, 3, 4 instead of A, B, C, D
-            if (correctIndex === -1 && !isNaN(parseInt(correctChar))) {
-                correctIndex = parseInt(correctChar) - 1;
+            if (correctIndex === -1 && !isNaN(parseInt(correctValue))) {
+                correctIndex = parseInt(correctValue) - 1;
+            }
+
+            const options = [
+                (row['Option A'] || row['option a'] || '').toString(),
+                (row['Option B'] || row['option b'] || '').toString(),
+                (row['Option C'] || row['option c'] || '').toString(),
+                (row['Option D'] || row['option d'] || '').toString()
+            ];
+
+            // PROPOSED ADDITION: Check if correctValue matches any option text (case-insensitive)
+            if (correctIndex === -1 && correctValue !== '') {
+                const lowerCorrect = correctValue.toLowerCase();
+                const foundIndex = options.findIndex(opt => opt.toLowerCase().trim() === lowerCorrect);
+                if (foundIndex !== -1) {
+                    correctIndex = foundIndex;
+                    console.log(`Matched "${correctValue}" to Option ${['A', 'B', 'C', 'D'][foundIndex]}`);
+                }
             }
 
             // Fallback: Default to 0 (Option A) if invalid, but log warning
             if (correctIndex < 0 || correctIndex > 3) {
-                console.warn(`Row ${index + 1}: Invalid correct answer "${correctChar}". Defaulting to Option A.`);
+                console.warn(`Row ${index + 1}: Invalid correct answer "${correctValue}". Defaulting to Option A.`);
                 correctIndex = 0;
             }
 
             return {
                 question: questionText,
-                options: [
-                    (row['Option A'] || row['option a'] || '').toString(),
-                    (row['Option B'] || row['option b'] || '').toString(),
-                    (row['Option C'] || row['option c'] || '').toString(),
-                    (row['Option D'] || row['option d'] || '').toString()
-                ],
+                options,
                 correct: correctIndex
             };
         }).filter(q => q.question && q.question.trim() !== '');
