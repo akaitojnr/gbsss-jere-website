@@ -516,13 +516,62 @@ app.delete('/api/assignments/:id', async (req, res) => {
 });
 
 // --- CBT API ---
+// Helper to shuffle array (Fisher-Yates)
+const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
+// Helper to shuffle exam questions and options
+const shuffleExam = (exam) => {
+    const examObj = exam.toObject(); // Convert Mongoose doc to plain object
+
+    // 1. Shuffle Questions
+    if (examObj.questions && examObj.questions.length > 0) {
+        examObj.questions = shuffleArray(examObj.questions);
+
+        // 2. Shuffle Options within each question
+        examObj.questions = examObj.questions.map(q => {
+            if (!q.options || q.options.length === 0) return q;
+
+            // Store original index to track correct answer
+            const optionsWithIndex = q.options.map((opt, idx) => ({
+                text: opt,
+                originalIndex: idx
+            }));
+
+            // Shuffle options
+            const shuffledOptions = shuffleArray(optionsWithIndex);
+
+            // Find new index of the correct answer
+            // q.correct is the original index of the correct answer
+            const newCorrectIndex = shuffledOptions.findIndex(item => item.originalIndex === q.correct);
+
+            return {
+                ...q,
+                options: shuffledOptions.map(item => item.text),
+                correct: newCorrectIndex
+            };
+        });
+    }
+    return examObj;
+};
+
 app.get('/api/cbt', async (req, res) => {
     const { studentClass } = req.query;
     try {
         const query = studentClass ? { class: studentClass } : {};
         const exams = await CBTExam.find(query).sort({ createdAt: -1 });
-        res.json(exams);
+
+        // Shuffle questions and options for each exam
+        const shuffledExams = exams.map(exam => shuffleExam(exam));
+
+        res.json(shuffledExams);
     } catch (err) {
+        console.error("Error fetching CBT:", err);
         res.status(500).json({ message: 'Error' });
     }
 });
