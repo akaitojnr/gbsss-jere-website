@@ -582,14 +582,19 @@ app.post('/api/import-questions', uploadMemory.single('file'), async (req, res) 
         const questions = data.map((row, index) => {
             // Flexible column matching
             const questionText = row['Question'] || row['question'] || '';
-            // Match against various common header names including the one in the template
-            const correctValue = (
-                row['Correct Answer (A/B/C/D)'] ||
-                row['Correct Answer'] ||
-                row['Correct'] ||
-                row['correct'] ||
-                ''
-            ).toString().trim();
+
+            // Find the "Correct Answer" column dynamically
+            const rowKeys = Object.keys(row);
+            const correctKey = rowKeys.find(k => {
+                const lower = k.toLowerCase();
+                return lower.includes('correct') || lower === 'answer' || lower === 'ans';
+            });
+
+            const correctValue = (correctKey ? row[correctKey] : '').toString().trim();
+
+            if (index < 3) {
+                console.log(`[Import Debug] Row ${index + 1}: Found Correct Key="${correctKey}", Value="${correctValue}"`);
+            }
 
             const correctCharUpper = correctValue.toUpperCase();
             let correctIndex = -1;
@@ -605,6 +610,11 @@ app.post('/api/import-questions', uploadMemory.single('file'), async (req, res) 
             // 3. "A.", "B)", "A " (Case insensitive)
             else if (/^[A-D][.)]?$/.test(correctCharUpper)) {
                 correctIndex = ['A', 'B', 'C', 'D'].indexOf(correctCharUpper.charAt(0));
+            }
+            // 3.5 "Answer is B", "The answer is A"
+            else if (/ANSWER IS [A-D]/.test(correctCharUpper)) {
+                const match = correctCharUpper.match(/ANSWER IS ([A-D])/);
+                if (match) correctIndex = ['A', 'B', 'C', 'D'].indexOf(match[1]);
             }
             // 4. Numeric 1-4
             else if (!isNaN(parseInt(correctValue))) {
