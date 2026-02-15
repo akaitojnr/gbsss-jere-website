@@ -478,30 +478,36 @@ app.post('/api/contact', async (req, res) => {
         });
         await newContact.save();
 
-        // Email logic
-        const config = await Config.findOne();
-        if (config && config.contact && config.contact.email) {
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: "gbsssjereutme@gmail.com",
-                    pass: "nuiosqrdlfaxtdos",
-                },
-            });
+        // Email logic (Wrapped in try-catch so it doesn't fail the request if email fails)
+        try {
+            const config = await Config.findOne();
+            if (config && config.contact && config.contact.email) {
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: "gbsssjereutme@gmail.com",
+                        pass: "nuiosqrdlfaxtdos",
+                    },
+                });
 
-            const mailOptions = {
-                from: "gbsssjereutme@gmail.com",
-                to: config.contact.email,
-                subject: `New Contact Message from ${name}`,
-                text: `You have a new message from ${name} (${email}):\n\n${message}`
-            };
+                const mailOptions = {
+                    from: "gbsssjereutme@gmail.com",
+                    to: config.contact.email,
+                    subject: `New Contact Message from ${name}`,
+                    text: `You have a new message from ${name} (${email}):\n\n${message}`
+                };
 
-            await transporter.sendMail(mailOptions);
+                await transporter.sendMail(mailOptions);
+            }
+        } catch (emailErr) {
+            console.error("Email notification failed:", emailErr.message);
+            // We intentionally swallow this error so the user still gets a success message for the DB save
         }
 
         res.json({ success: true, message: 'Message stored' });
     } catch (err) {
-        res.status(500).json({ message: 'Error' });
+        console.error("Contact save error:", err);
+        res.status(500).json({ message: 'Error saving message' });
     }
 });
 
