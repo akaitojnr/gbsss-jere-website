@@ -63,11 +63,23 @@ const Admin = () => {
     const [submissions, setSubmissions] = useState([]);
     const [submissionStatus, setSubmissionStatus] = useState('');
 
+    // Video Lessons State
+    const [videoLessons, setVideoLessons] = useState([]);
+    const [videoLessonForm, setVideoLessonForm] = useState({ title: '', description: '', youtubeUrl: '', category: 'General' });
+    const [videoLessonStatus, setVideoLessonStatus] = useState('');
+
     const fetchSubmissions = () => {
         fetch(`${API_BASE_URL}/api/submissions`)
             .then(res => res.json())
             .then(data => setSubmissions(data))
             .catch(err => console.error("Error fetching submissions:", err));
+    };
+
+    const fetchVideoLessons = () => {
+        fetch(`${API_BASE_URL}/api/video-lessons`)
+            .then(res => res.json())
+            .then(data => setVideoLessons(data))
+            .catch(err => console.error("Error fetching video lessons:", err));
     };
 
     const handleSubmissionDelete = async (id) => {
@@ -180,7 +192,9 @@ const Admin = () => {
         fetchExams();
         fetchContacts();
         fetchPins();
+        fetchPins();
         fetchSubmissions();
+        fetchVideoLessons();
     }, []);
 
     const tabs = [
@@ -190,6 +204,7 @@ const Admin = () => {
         { id: 'assignments', label: 'Assignments' },
         { id: 'exams', label: 'CBT Exams' },
         { id: 'submissions', label: 'Student Submissions' },
+        { id: 'video-lessons', label: 'Video Lessons' },
         { id: 'pins', label: 'Admission PINs' },
         { id: 'messages', label: 'Messages' },
         { id: 'settings', label: 'General Settings' }
@@ -673,6 +688,39 @@ const Admin = () => {
         }
     };
 
+    // Video Lesson Handlers
+    const handleVideoLessonSubmit = async (e) => {
+        e.preventDefault();
+        setVideoLessonStatus('Saving...');
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/video-lessons`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(videoLessonForm)
+            });
+            const data = await res.json();
+            if (data.title || data._id) {
+                setVideoLessonStatus('Video lesson added!');
+                setVideoLessonForm({ title: '', description: '', youtubeUrl: '', category: 'General' });
+                fetchVideoLessons();
+            } else {
+                setVideoLessonStatus('Failed: ' + (data.message || 'Unknown error'));
+            }
+        } catch (err) {
+            setVideoLessonStatus('Error saving video lesson.');
+        }
+    };
+
+    const handleVideoLessonDelete = async (id) => {
+        if (!window.confirm('Delete this video lesson?')) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/video-lessons/${id}`, { method: 'DELETE' });
+            if ((await res.json()).message === 'Video deleted') fetchVideoLessons();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     return (
         <div className="container" style={{ padding: '60px 20px', maxWidth: '1200px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
@@ -688,7 +736,7 @@ const Admin = () => {
 
             {/* Tab Navigation */}
             <div style={styles.tabs}>
-                {['gallery', 'school', 'news', 'about', 'academics', 'admissions', 'pins', 'contact', 'messages', 'students', 'assignments', 'cbt', 'submissions'].map(tab => (
+                {['gallery', 'school', 'news', 'about', 'academics', 'admissions', 'pins', 'contact', 'messages', 'students', 'assignments', 'cbt', 'submissions', 'video-lessons'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -707,9 +755,91 @@ const Admin = () => {
                         {tab === 'assignments' && 'Assignments'}
                         {tab === 'cbt' && 'CBT Exams'}
                         {tab === 'submissions' && 'Student Submissions'}
+                        {tab === 'video-lessons' && 'Video Lessons'}
                     </button>
                 ))}
             </div>
+
+            {/* Video Lessons Tab */}
+            {activeTab === 'video-lessons' && (
+                <div style={styles.grid}>
+                    <div style={styles.card}>
+                        <h2>Add Video Lesson</h2>
+                        <form onSubmit={handleVideoLessonSubmit}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Title</label>
+                                <input
+                                    type="text"
+                                    value={videoLessonForm.title}
+                                    onChange={(e) => setVideoLessonForm({ ...videoLessonForm, title: e.target.value })}
+                                    style={styles.input}
+                                    required
+                                />
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>YouTube URL</label>
+                                <input
+                                    type="text"
+                                    value={videoLessonForm.youtubeUrl}
+                                    onChange={(e) => setVideoLessonForm({ ...videoLessonForm, youtubeUrl: e.target.value })}
+                                    style={styles.input}
+                                    required
+                                    placeholder="https://www.youtube.com/watch?v=..."
+                                />
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Category</label>
+                                <select
+                                    value={videoLessonForm.category}
+                                    onChange={(e) => setVideoLessonForm({ ...videoLessonForm, category: e.target.value })}
+                                    style={styles.input}
+                                >
+                                    <option value="General">General</option>
+                                    <option value="Science">Science</option>
+                                    <option value="Arts">Arts</option>
+                                    <option value="Commercial">Commercial</option>
+                                </select>
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Description</label>
+                                <textarea
+                                    value={videoLessonForm.description}
+                                    onChange={(e) => setVideoLessonForm({ ...videoLessonForm, description: e.target.value })}
+                                    style={{ ...styles.input, height: '100px' }}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Add Video Lesson</button>
+                            {videoLessonStatus && <p style={{ marginTop: '10px', fontWeight: 'bold' }}>{videoLessonStatus}</p>}
+                        </form>
+                    </div>
+
+                    <div style={styles.card}>
+                        <h2>Manage Video Lessons</h2>
+                        {videoLessons.length === 0 ? (
+                            <p>No video lessons.</p>
+                        ) : (
+                            <div style={styles.list}>
+                                {videoLessons.map(video => (
+                                    <div key={video._id} style={styles.listItem}>
+                                        <div style={{ flex: 1 }}>
+                                            <h4 style={{ margin: '0 0 5px' }}>{video.title}</h4>
+                                            <p style={{ margin: '0', fontSize: '0.9rem', color: '#666' }}>{video.category}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => handleVideoLessonDelete(video._id)}
+                                            className="btn"
+                                            style={styles.deleteBtn}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Gallery Tab */}
             {activeTab === 'gallery' && (

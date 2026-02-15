@@ -25,6 +25,7 @@ const Gallery = require('./models/Gallery');
 const Contact = require('./models/Contact');
 const Config = require('./models/Config');
 const AdmissionPin = require('./models/AdmissionPin');
+const videoLessonRoutes = require('./routes/videoLessons');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -150,6 +151,7 @@ const upload = multer({ storage });
 const uploadMemory = multer({ storage: multer.memoryStorage() });
 
 // Routes
+app.use('/api/video-lessons', videoLessonRoutes);
 
 // Get Gallery
 app.get('/api/gallery', async (req, res) => {
