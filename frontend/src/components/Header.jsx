@@ -34,9 +34,9 @@ const Header = () => {
         <header style={styles.header} className="no-print">
             <div className="container" style={styles.container}>
                 <div style={styles.logo}>
-                    <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        {schoolConfig.images.logo && <img src={getImageUrl(schoolConfig.images.logo)} alt="Logo" style={{ height: '80px' }} />}
-                        <h1>{schoolConfig.name}</h1>
+                    <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {schoolConfig.images.logo && <img src={getImageUrl(schoolConfig.images.logo)} alt="Logo" style={{ height: '50px' }} />}
+                        <h1 style={{ fontSize: '1.2rem', whiteSpace: 'nowrap' }}>{schoolConfig.name}</h1>
                     </Link>
                 </div>
 
@@ -68,7 +68,7 @@ const styles = {
         position: 'sticky',
         top: 0,
         zIndex: 1000,
-        padding: '10px 0',
+        padding: '5px 0',
     },
     container: {
         display: 'flex',
@@ -83,7 +83,7 @@ const styles = {
     },
     navList: {
         display: 'flex',
-        gap: '20px',
+        gap: '12px',
         alignItems: 'center',
     },
     navLink: {
