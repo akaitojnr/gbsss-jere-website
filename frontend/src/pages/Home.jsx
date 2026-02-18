@@ -71,28 +71,25 @@ const HeroSlider = ({ slides }) => {
                         }}>
                             <div style={{
                                 display: 'inline-block',
-                                padding: isMobile ? '20px 25px' : '30px 60px',
-                                background: 'rgba(0, 0, 0, 0.55)',
-                                backdropFilter: 'blur(12px)',
-                                borderRadius: '24px',
-                                border: '1px solid rgba(255, 255, 255, 0.15)',
-                                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
-                                maxWidth: isMobile ? '90%' : '800px',
-                                margin: '0 auto'
+                                maxWidth: isMobile ? '95%' : '1000px',
+                                margin: '0 auto',
+                                padding: '10px'
                             }}>
                                 <h1 style={{
-                                    fontSize: isMobile ? '1.4rem' : '2.8rem',
-                                    marginBottom: '15px',
+                                    fontSize: isMobile ? '1.2rem' : '2.1rem',
+                                    marginBottom: '20px',
                                     fontWeight: '800',
-                                    textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                                    textShadow: '2px 2px 12px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7)',
                                     color: 'white',
-                                    lineHeight: '1.2'
+                                    lineHeight: '1.2',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px'
                                 }}>
                                     {slide.caption || "Welcome to our School"}
                                 </h1>
-                                <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: isMobile ? '15px' : '25px' }}>
-                                    <Link to="/admissions" className="btn btn-primary" style={{ padding: isMobile ? '8px 20px' : '12px 35px', fontSize: isMobile ? '0.85rem' : '1rem', borderRadius: '12px', fontWeight: 'bold' }}>Apply Now</Link>
-                                    <Link to="/about" className="btn btn-secondary" style={{ padding: isMobile ? '8px 20px' : '12px 35px', fontSize: isMobile ? '0.85rem' : '1rem', backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '12px', fontWeight: 'bold' }}>Learn More</Link>
+                                <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: isMobile ? '10px' : '20px' }}>
+                                    <Link to="/admissions" className="btn btn-primary" style={{ padding: isMobile ? '8px 20px' : '12px 35px', fontSize: isMobile ? '0.85rem' : '1rem', borderRadius: '50px', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}>Apply Now</Link>
+                                    <Link to="/about" className="btn btn-secondary" style={{ padding: isMobile ? '8px 20px' : '12px 35px', fontSize: isMobile ? '0.85rem' : '1rem', backgroundColor: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(5px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '50px', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}>Learn More</Link>
                                 </div>
                             </div>
                         </div>
