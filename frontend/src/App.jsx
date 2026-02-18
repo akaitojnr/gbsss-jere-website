@@ -10,7 +10,6 @@ import News from './pages/News';
 import Contact from './pages/Contact';
 import Gallery from './pages/Gallery';
 import Admin from './pages/Admin';
-import VideoLessons from './pages/VideoLessons';
 import { ConfigProvider } from './context/ConfigContext';
 
 // Deployment Trigger: 2026-02-15 21:40
@@ -30,7 +29,6 @@ function App() {
               <Route path="/portal" element={<StudentPortal />} />
               <Route path="/news" element={<News />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/video-lessons" element={<VideoLessons />} />
               <Route path="/admin" element={<Admin />} />
             </Routes>
           </main>

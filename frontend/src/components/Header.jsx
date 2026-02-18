@@ -51,7 +51,6 @@ const Header = () => {
                         <li><NavLink to="/academics" style={getNavLinkStyle} onClick={toggleMenu}>Academics</NavLink></li>
                         <li><NavLink to="/admissions" style={getNavLinkStyle} onClick={toggleMenu}>Admissions</NavLink></li>
                         <li><NavLink to="/gallery" style={getNavLinkStyle} onClick={toggleMenu}>Gallery</NavLink></li>
-                        <li><NavLink to="/video-lessons" style={getNavLinkStyle} onClick={toggleMenu}>Video Lessons</NavLink></li>
                         <li><NavLink to="/news" style={getNavLinkStyle} onClick={toggleMenu}>News</NavLink></li>
                         <li><NavLink to="/contact" style={getNavLinkStyle} onClick={toggleMenu}>Contact</NavLink></li>
                         <li><NavLink to="/portal" style={getPortalLinkStyle} onClick={toggleMenu}>Student Portal</NavLink></li>

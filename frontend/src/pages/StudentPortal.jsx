@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { useConfig } from '../context/ConfigContext';
 import { API_BASE_URL } from '../config';
 
@@ -13,7 +14,9 @@ const StudentPortal = () => {
     const [assignments, setAssignments] = useState([]);
     const [exams, setExams] = useState([]);
     const [submissions, setSubmissions] = useState([]);
-    const [view, setView] = useState('dashboard'); // 'dashboard', 'assignments', 'exam'
+    const [videoLessons, setVideoLessons] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [view, setView] = useState('dashboard'); // 'dashboard', 'assignments', 'exam', 'video-lessons'
     const [activeExam, setActiveExam] = useState(null);
     const [examAnswers, setExamAnswers] = useState({});
     const [timeLeft, setTimeLeft] = useState(0);
@@ -80,15 +83,17 @@ const StudentPortal = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const [aRes, eRes, sRes] = await Promise.all([
+            const [aRes, eRes, sRes, vRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/assignments?studentClass=${encodeURIComponent(student.class)}`),
                 fetch(`${API_BASE_URL}/api/cbt?studentClass=${encodeURIComponent(student.class)}`),
-                fetch(`${API_BASE_URL}/api/submissions/${student.regNumber}`)
+                fetch(`${API_BASE_URL}/api/submissions/${student.regNumber}`),
+                fetch(`${API_BASE_URL}/api/video-lessons`)
             ]);
 
             setAssignments(await aRes.json());
             setExams(await eRes.json());
             setSubmissions(await sRes.json());
+            setVideoLessons(await vRes.json());
         } catch (err) {
             console.error("Error fetching portal data:", err);
         }
@@ -147,6 +152,18 @@ const StudentPortal = () => {
         }
     };
 
+    const getEmbedUrl = (url) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+    };
+
+    const filteredVideos = selectedCategory === 'All'
+        ? videoLessons
+        : videoLessons.filter(video => video.category === selectedCategory);
+
+    const videoCategories = ['All', 'Science', 'Arts', 'Commercial', 'General'];
+
     if (student) {
         return (
             <div className="container" style={{ padding: '60px 20px' }}>
@@ -183,22 +200,21 @@ const StudentPortal = () => {
                                         <small>CBT Exams</small>
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <h2 style={{ margin: 0, color: 'var(--primary-color)' }}>{submissions.length}</h2>
-                                        <small>Completed</small>
+                                        <h2 style={{ margin: 0, color: 'var(--primary-color)' }}>{videoLessons.length}</h2>
+                                        <small>Videos</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginTop: '40px' }} className="no-print grid-responsive">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '40px' }} className="no-print grid-responsive">
                             <div style={styles.actionCard}>
                                 <h3 style={{ color: 'var(--primary-color)' }}>Assignments</h3>
                                 {assignments.length === 0 ? <p>No pending assignments.</p> : (
                                     <ul style={{ textAlign: 'left', margin: '15px 0' }}>
-                                        {assignments.map(a => (
+                                        {assignments.slice(0, 2).map(a => (
                                             <li key={a.id} style={{ marginBottom: '10px' }}>
-                                                <strong>{a.subject}:</strong> {a.title} <br />
-                                                <small style={{ color: '#666' }}>Due: {a.dueDate}</small>
+                                                <strong>{a.subject}:</strong> {a.title}
                                             </li>
                                         ))}
                                     </ul>
@@ -210,22 +226,23 @@ const StudentPortal = () => {
                                 <h3 style={{ color: 'var(--primary-color)' }}>CBT Exams</h3>
                                 {exams.length === 0 ? <p>No active exams.</p> : (
                                     <div style={{ textAlign: 'left', margin: '15px 0' }}>
-                                        {exams.map(e => {
-                                            const taken = submissions.some(s => s.type === 'cbt' && s.referenceId === e.id);
-                                            return (
-                                                <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', padding: '10px', background: '#fff', borderRadius: '5px' }}>
-                                                    <div>
-                                                        <strong>{e.title}</strong><br />
-                                                        <small>{e.subject} | {e.questions.length} Qs</small>
-                                                    </div>
-                                                    {taken ? <span style={{ color: 'green' }}>✓ Taken</span> :
-                                                        <button className="btn" style={{ backgroundColor: '#28a745', color: '#fff', padding: '5px 10px' }} onClick={() => startExam(e)}>Start</button>
-                                                    }
-                                                </div>
-                                            );
-                                        })}
+                                        {exams.slice(0, 2).map(e => (
+                                            <div key={e.id} style={{ marginBottom: '5px' }}>
+                                                <strong>{e.title}</strong>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
+                                <button className="btn btn-primary" onClick={() => setView('dashboard') /* or another way to scroll to it */}>Manage</button>
+                            </div>
+
+                            <div style={styles.actionCard}>
+                                <h3 style={{ color: 'var(--primary-color)' }}>Video Lessons</h3>
+                                <p>{videoLessons.length} available lessons</p>
+                                <div style={{ margin: '15px 0' }}>
+                                    <small>Access recorded tutorials and study materials.</small>
+                                </div>
+                                <button className="btn btn-primary" onClick={() => setView('video-lessons')}>Watch Now</button>
                             </div>
                         </div>
 
@@ -326,6 +343,106 @@ const StudentPortal = () => {
                             </div>
                         </div>
                     </>
+                )}
+
+                {view === 'video-lessons' && (
+                    <div style={styles.card}>
+                        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                            <h2 className="section-title">Video Lessons</h2>
+                            <p className="text-gray-600">Watch recorded lessons and tutorials</p>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '40px', flexWrap: 'wrap' }}>
+                            {videoCategories.map((category) => (
+                                <button
+                                    key={category}
+                                    onClick={() => setSelectedCategory(category)}
+                                    className="btn"
+                                    style={{
+                                        backgroundColor: selectedCategory === category ? 'var(--primary-color)' : '#f8f9fa',
+                                        color: selectedCategory === category ? 'white' : '#666',
+                                        border: '1px solid #ddd',
+                                        borderRadius: '25px',
+                                        padding: '8px 20px'
+                                    }}
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
+                            {filteredVideos.map((video, index) => {
+                                const embedUrl = getEmbedUrl(video.youtubeUrl);
+                                return (
+                                    <motion.div
+                                        key={video._id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        style={{
+                                            backgroundColor: 'white',
+                                            borderRadius: '12px',
+                                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                            overflow: 'hidden',
+                                            border: '1px solid #eee'
+                                        }}
+                                    >
+                                        <div style={{ position: 'relative', paddingTop: '56.25%', backgroundColor: '#000' }}>
+                                            {embedUrl ? (
+                                                <iframe
+                                                    src={embedUrl}
+                                                    title={video.title}
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowFullScreen
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: 0,
+                                                        left: 0,
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        border: 'none'
+                                                    }}
+                                                ></iframe>
+                                            ) : (
+                                                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                                                    Invalid Video URL
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div style={{ padding: '20px' }}>
+                                            <span style={{
+                                                display: 'inline-block',
+                                                padding: '4px 12px',
+                                                backgroundColor: '#e8f5e9',
+                                                color: 'var(--primary-color)',
+                                                borderRadius: '15px',
+                                                fontSize: '0.8rem',
+                                                fontWeight: 'bold',
+                                                marginBottom: '10px'
+                                            }}>
+                                                {video.category || 'General'}
+                                            </span>
+                                            <h3 style={{ fontSize: '1.2rem', margin: '0 0 10px 0', color: '#333' }}>{video.title}</h3>
+                                            <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '15px', height: '3.6em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                                                {video.description}
+                                            </p>
+                                            <div style={{ fontSize: '0.8rem', color: '#999' }}>
+                                                Uploaded on {new Date(video.date).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+
+                        {filteredVideos.length === 0 && (
+                            <div style={{ textAlign: 'center', color: '#999', padding: '40px' }}>
+                                No video lessons found in this category.
+                            </div>
+                        )}
+                    </div>
                 )}
 
                 {view === 'assignments' && (
