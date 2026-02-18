@@ -16,7 +16,7 @@ const StudentPortal = () => {
     const [submissions, setSubmissions] = useState([]);
     const [videoLessons, setVideoLessons] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [view, setView] = useState('dashboard'); // 'dashboard', 'assignments', 'exam', 'video-lessons'
+    const [view, setView] = useState('dashboard'); // 'dashboard', 'assignments', 'exams', 'exam', 'video-lessons'
     const [activeExam, setActiveExam] = useState(null);
     const [examAnswers, setExamAnswers] = useState({});
     const [timeLeft, setTimeLeft] = useState(0);
@@ -226,14 +226,22 @@ const StudentPortal = () => {
                                 <h3 style={{ color: 'var(--primary-color)' }}>CBT Exams</h3>
                                 {exams.length === 0 ? <p>No active exams.</p> : (
                                     <div style={{ textAlign: 'left', margin: '15px 0' }}>
-                                        {exams.slice(0, 2).map(e => (
-                                            <div key={e.id} style={{ marginBottom: '5px' }}>
-                                                <strong>{e.title}</strong>
-                                            </div>
-                                        ))}
+                                        {exams.slice(0, 2).map(e => {
+                                            const taken = submissions.some(s => s.type === 'cbt' && s.referenceId === e.id);
+                                            return (
+                                                <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', padding: '5px', background: '#fff', borderRadius: '5px' }}>
+                                                    <div style={{ fontSize: '0.9rem' }}>
+                                                        <strong>{e.title}</strong>
+                                                    </div>
+                                                    {taken ? <span style={{ color: 'green', fontSize: '0.8rem' }}>✓ Taken</span> :
+                                                        <button className="btn" style={{ backgroundColor: '#28a745', color: '#fff', padding: '2px 8px', fontSize: '0.8rem' }} onClick={() => startExam(e)}>Start</button>
+                                                    }
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
-                                <button className="btn btn-primary" onClick={() => setView('dashboard') /* or another way to scroll to it */}>Manage</button>
+                                <button className="btn btn-primary" onClick={() => setView('exams')}>View All</button>
                             </div>
 
                             <div style={styles.actionCard}>
@@ -343,6 +351,44 @@ const StudentPortal = () => {
                             </div>
                         </div>
                     </>
+                )}
+
+                {view === 'exams' && (
+                    <div style={styles.card}>
+                        <h2>Computer Based Tests (CBT)</h2>
+                        {exams.length === 0 ? <p>No exams available at the moment.</p> : (
+                            <div style={{ marginTop: '20px' }}>
+                                {exams.map(e => {
+                                    const taken = submissions.some(s => s.type === 'cbt' && s.referenceId === e.id);
+                                    return (
+                                        <div key={e.id} style={{ padding: '20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <h3>{e.title}</h3>
+                                                <p style={{ color: '#666', margin: '5px 0' }}>{e.subject} | {e.questions.length} Questions</p>
+                                                <small style={{ color: '#888' }}>Time Limit: {e.timeLimit} minutes</small>
+                                            </div>
+                                            <div>
+                                                {taken ? (
+                                                    <span style={{ color: 'green', fontWeight: 'bold', border: '1px solid green', padding: '5px 15px', borderRadius: '5px' }}>
+                                                        COMPLETED
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        className="btn"
+                                                        style={{ backgroundColor: '#28a745', color: 'white', padding: '10px 25px' }}
+                                                        onClick={() => startExam(e)}
+                                                    >
+                                                        Start Exam
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        <button className="btn btn-secondary" style={{ marginTop: '20px' }} onClick={() => setView('dashboard')}>Back to Dashboard</button>
+                    </div>
                 )}
 
                 {view === 'video-lessons' && (
