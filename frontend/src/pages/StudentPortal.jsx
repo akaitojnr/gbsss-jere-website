@@ -86,7 +86,7 @@ const StudentPortal = () => {
             const [aRes, eRes, sRes, vRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/assignments?studentClass=${encodeURIComponent(student.class)}`),
                 fetch(`${API_BASE_URL}/api/cbt?studentClass=${encodeURIComponent(student.class)}`),
-                fetch(`${API_BASE_URL}/api/submissions/${student.regNumber}`),
+                fetch(`${API_BASE_URL}/api/submissions/${encodeURIComponent(student.regNumber)}`),
                 fetch(`${API_BASE_URL}/api/video-lessons`)
             ]);
 
