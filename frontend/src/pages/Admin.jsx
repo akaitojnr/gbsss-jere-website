@@ -2131,8 +2131,12 @@ const Admin = () => {
                                                 <option value="Physics">Physics</option>
                                                 <option value="Chemistry">Chemistry</option>
                                                 <option value="Biology">Biology</option>
-                                                <option value="Economics">Economics</option>
                                                 <option value="Civic Education">Civic Education</option>
+                                                <option value="Geography">Geography</option>
+                                                <option value="Computer">Computer</option>
+                                                <option value="Technical Drawing">Technical Drawing</option>
+                                                <option value="Agric Science">Agric Science</option>
+                                                <option value="Further Mathematics">Further Mathematics</option>
                                             </select>
                                         </div>
 
