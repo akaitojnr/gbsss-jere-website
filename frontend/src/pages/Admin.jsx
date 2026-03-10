@@ -34,6 +34,7 @@ const Admin = () => {
     const [studentStatus, setStudentStatus] = useState('');
     const [csvFile, setCsvFile] = useState(null);
     const [importStatus, setImportStatus] = useState('');
+    const [studentSubTab, setStudentSubTab] = useState('list');
 
     // Assignments States
     const [assignments, setAssignments] = useState([]);
@@ -1956,254 +1957,385 @@ const Admin = () => {
             )}
 
             {/* Students & Results Tab */}
-            {activeTab === 'students' && (
-                <div>
-                    <h2>Student & Result Management</h2>
+            {activeTab === 'students' && (() => {
+                // Define local state and handler for sub-tabs if not already existing,
+                // but since we're in a render function we can use a simpler approach or just add state at the top.
+                // We'll use a local variable/trick since we cannot easily add a new useState hook *here* without refactoring the top of the component.
+                // Actually, since React requires hooks at top, we will use a small hack or just render it inline.
+                // Wait, I can just use a local state variable `studentSubTab` added to the top of the file, OR I can just use inline state if I create a sub-component.
+                // Let's rely on standard React by adding `studentSubTab` to the top of Admin.jsx in the next step, OR I can just use the existing `editingStudent` state to toggle forms, but sub-tabs are cleaner.
+                // Since I can't easily add a hook via replace_file_content safely without modifying the top, I will instead just add the Import Students section alongside the existing ones, but visually distinct.
+                // WAIT, I CAN add a hook at the top. But I will just use a simple sub-navigation menu using standard DOM if needed, OR just stack them.
+                // Let's look at the implementation plan: "Introduce a local state studentSubTab ... when activeTab === 'students'". I should add the state to the top of Admin.jsx first, but since I am replacing this whole block, I can just build a sub-component OR I'll add the state to the top in a separate edit.
+                // For now, let's just use a simple inline state component, or better yet, I will add `const [studentSubTab, setStudentSubTab] = useState('list');` to the top of the file in another edit. Assuming it's there:
 
-                    {/* CSV Import Section */}
-                    <div style={{ ...styles.card, marginBottom: '30px', backgroundColor: '#e8f5e9' }}>
-                        <h3>📊 Import Results from CSV</h3>
-                        <p style={{ marginBottom: '15px', color: '#666' }}>
-                            Upload a CSV file to import multiple students and their results at once.
-                        </p>
+                return (
+                    <div>
+                        <h2>Student & Result Management</h2>
 
-                        <div style={{ marginBottom: '15px' }}>
+                        {/* Sub-tabs Navigation */}
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                            <button
+                                onClick={() => setStudentSubTab('list')}
+                                className={`btn ${studentSubTab === 'list' ? 'btn-primary' : 'btn-secondary'}`}
+                                style={{ padding: '8px 16px', borderRadius: '4px' }}
+                            >
+                                📋 Student List
+                            </button>
                             <button
                                 onClick={() => {
-                                    const csvContent = "RegNumber,Password,Name,Class,Mathematics,English,Physics,Chemistry,Biology,Economics\nSCH/2026/001,password123,Ibrahim Musa,SS3 A,85,78,90,72,88,75\nSCH/2026/002,pass,Chidinma Okeke,SS3 B,65,88,75,80,70,82\nSCH/2026/003,student123,Adebayo Johnson,SS2 A,92,85,78,88,90,86";
-                                    const blob = new Blob([csvContent], { type: 'text/csv' });
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = 'student_results_template.csv';
-                                    a.click();
+                                    setEditingStudent(null);
+                                    setStudentForm({ regNumber: '', password: '', name: '', class: '', results: [] });
+                                    setStudentSubTab('add');
                                 }}
-                                className="btn btn-secondary"
-                                style={{ marginRight: '10px' }}
+                                className={`btn ${studentSubTab === 'add' ? 'btn-primary' : 'btn-secondary'}`}
+                                style={{ padding: '8px 16px', borderRadius: '4px' }}
                             >
-                                📥 Download CSV Template
+                                ➕ Add Single Student
+                            </button>
+                            <button
+                                onClick={() => setStudentSubTab('import')}
+                                className={`btn ${studentSubTab === 'import' ? 'btn-primary' : 'btn-secondary'}`}
+                                style={{ padding: '8px 16px', borderRadius: '4px' }}
+                            >
+                                📂 Bulk Import Students
+                            </button>
+                            <button
+                                onClick={() => setStudentSubTab('importResults')}
+                                className={`btn ${studentSubTab === 'importResults' ? 'btn-primary' : 'btn-secondary'}`}
+                                style={{ padding: '8px 16px', borderRadius: '4px' }}
+                            >
+                                📊 Import Results
                             </button>
                         </div>
 
-                        <input
-                            type="file"
-                            accept=".csv"
-                            onChange={(e) => setCsvFile(e.target.files[0])}
-                            style={styles.input}
-                        />
+                        {/* Bulk Import Students Section */}
+                        {studentSubTab === 'import' && (
+                            <div style={{ ...styles.card, marginBottom: '30px', backgroundColor: '#e3f2fd' }}>
+                                <h3>📂 Bulk Import Students from CSV</h3>
+                                <p style={{ marginBottom: '15px', color: '#666' }}>
+                                    Upload a CSV file to import multiple new students at once (without results).
+                                    Required columns: <b>RegNumber, Password, Name, Class</b>
+                                </p>
 
-                        <button
-                            onClick={async () => {
-                                if (!csvFile) {
-                                    setImportStatus('Please select a CSV file');
-                                    return;
-                                }
-
-                                setImportStatus('Importing...');
-                                const formData = new FormData();
-                                formData.append('csv', csvFile);
-
-                                try {
-                                    const res = await fetch(`${API_BASE_URL}/api/import-results`, {
-                                        method: 'POST',
-                                        body: formData
-                                    });
-                                    const data = await res.json();
-
-                                    if (data.success) {
-                                        setImportStatus(`✅ ${data.message}`);
-                                        fetchStudents();
-                                        setCsvFile(null);
-                                    } else {
-                                        setImportStatus('❌ ' + data.message);
-                                    }
-                                } catch (err) {
-                                    setImportStatus('❌ Error importing CSV');
-                                    console.error(err);
-                                }
-                            }}
-                            className="btn btn-primary"
-                            style={{ marginTop: '10px' }}
-                        >
-                            Upload & Import CSV
-                        </button>
-
-                        {importStatus && <p style={{ marginTop: '15px', fontWeight: 'bold', color: importStatus.includes('✅') ? 'green' : 'red' }}>{importStatus}</p>}
-                    </div>
-
-                    {/* Add/Edit Student Form */}
-                    <div style={{ ...styles.card, marginBottom: '30px' }}>
-                        <h3>{editingStudent ? 'Edit Student' : 'Add New Student'}</h3>
-                        <form onSubmit={async (e) => {
-                            e.preventDefault();
-                            setStudentStatus('Saving...');
-
-                            const method = editingStudent ? 'PUT' : 'POST';
-                            const url = editingStudent
-                                ? `${API_BASE_URL}/api/students/${encodeURIComponent(editingStudent)}`
-                                : `${API_BASE_URL}/api/students`;
-
-                            try {
-                                const res = await fetch(url, {
-                                    method,
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(studentForm)
-                                });
-                                const data = await res.json();
-
-                                if (data.success) {
-                                    setStudentStatus('✅ Student saved successfully!');
-                                    fetchStudents();
-                                    setStudentForm({ regNumber: '', password: '', name: '', class: '', results: [] });
-                                    setEditingStudent(null);
-                                } else {
-                                    setStudentStatus('❌ ' + data.message);
-                                }
-                            } catch (err) {
-                                setStudentStatus('❌ Error saving student');
-                                console.error(err);
-                            }
-                        }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }} className="grid-responsive">
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Registration Number</label>
-                                    <input
-                                        type="text"
-                                        value={studentForm.regNumber}
-                                        onChange={(e) => setStudentForm({ ...studentForm, regNumber: e.target.value })}
-                                        style={styles.input}
-                                        required
-                                        disabled={editingStudent}
-                                    />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Password</label>
-                                    <input
-                                        type="text"
-                                        value={studentForm.password}
-                                        onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
-                                        style={styles.input}
-                                        required
-                                    />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Full Name</label>
-                                    <input
-                                        type="text"
-                                        value={studentForm.name}
-                                        onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })}
-                                        style={styles.input}
-                                        required
-                                    />
-                                </div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Class</label>
-                                    <input
-                                        type="text"
-                                        value={studentForm.class}
-                                        onChange={(e) => setStudentForm({ ...studentForm, class: e.target.value })}
-                                        style={styles.input}
-                                        placeholder="e.g. SS3 A"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                                <button type="submit" className="btn btn-primary">
-                                    {editingStudent ? 'Update Student' : 'Add Student'}
-                                </button>
-                                {editingStudent && (
+                                <div style={{ marginBottom: '15px' }}>
                                     <button
-                                        type="button"
                                         onClick={() => {
-                                            setEditingStudent(null);
-                                            setStudentForm({ regNumber: '', password: '', name: '', class: '', results: [] });
-                                            setStudentStatus('');
+                                            const csvContent = "RegNumber,Password,Name,Class\nSCH/2026/010,pass123,John Doe,SS1 A\nSCH/2026/011,pass123,Jane Smith,SS1 B";
+                                            const blob = new Blob([csvContent], { type: 'text/csv' });
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = 'student_import_template.csv';
+                                            a.click();
                                         }}
                                         className="btn btn-secondary"
+                                        style={{ marginRight: '10px' }}
                                     >
-                                        Cancel
+                                        📥 Download CSV Template
                                     </button>
-                                )}
-                            </div>
-                            {studentStatus && <p style={{ marginTop: '15px', fontWeight: 'bold', color: studentStatus.includes('✅') ? 'green' : 'red' }}>{studentStatus}</p>}
-                        </form>
-                    </div>
+                                </div>
 
-                    {/* Students List */}
-                    <div style={styles.card}>
-                        <h3>All Students ({students.length})</h3>
-                        {students.length === 0 ? (
-                            <p style={{ color: '#666', textAlign: 'center', padding: '20px' }}>No students found. Add students manually or import from CSV.</p>
-                        ) : (
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={styles.table}>
-                                    <thead>
-                                        <tr>
-                                            <th style={styles.th}>Reg Number</th>
-                                            <th style={styles.th}>Name</th>
-                                            <th style={styles.th}>Class</th>
-                                            <th style={styles.th}>Results</th>
-                                            <th style={styles.th}>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {students.map((student) => (
-                                            <tr key={student.regNumber}>
-                                                <td style={styles.td}>{student.regNumber}</td>
-                                                <td style={styles.td}>{student.name}</td>
-                                                <td style={styles.td}>{student.class}</td>
-                                                <td style={styles.td}>{student.results?.length || 0} subjects</td>
-                                                <td style={styles.td}>
-                                                    <button
-                                                        onClick={() => {
-                                                            setEditingStudent(student.regNumber);
-                                                            setStudentForm({
-                                                                regNumber: student.regNumber,
-                                                                password: '',
-                                                                name: student.name,
-                                                                class: student.class,
-                                                                results: student.results || []
-                                                            });
-                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                        }}
-                                                        className="btn btn-secondary"
-                                                        style={{ marginRight: '5px', padding: '5px 10px', fontSize: '0.9rem' }}
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (window.confirm(`Delete ${student.name}?`)) {
-                                                                try {
-                                                                    const res = await fetch(`${API_BASE_URL}/api/students/${encodeURIComponent(student.regNumber)}`, {
-                                                                        method: 'DELETE'
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={(e) => setCsvFile(e.target.files[0])}
+                                    style={styles.input}
+                                />
+
+                                <button
+                                    onClick={async () => {
+                                        if (!csvFile) {
+                                            setImportStatus('Please select a CSV file');
+                                            return;
+                                        }
+
+                                        setImportStatus('Importing students...');
+                                        const formData = new FormData();
+                                        formData.append('csv', csvFile);
+
+                                        try {
+                                            const res = await fetch(`${API_BASE_URL}/api/import-students`, {
+                                                method: 'POST',
+                                                body: formData
+                                            });
+                                            const data = await res.json();
+
+                                            if (data.success) {
+                                                setImportStatus(`✅ ${data.message}`);
+                                                fetchStudents();
+                                                setCsvFile(null);
+                                            } else {
+                                                setImportStatus('❌ ' + data.message);
+                                            }
+                                        } catch (err) {
+                                            setImportStatus('❌ Error importing students CSV');
+                                            console.error(err);
+                                        }
+                                    }}
+                                    className="btn btn-primary"
+                                    style={{ marginTop: '10px' }}
+                                >
+                                    Upload & Import Students
+                                </button>
+
+                                {importStatus && <p style={{ marginTop: '15px', fontWeight: 'bold', color: importStatus.includes('✅') ? 'green' : 'red' }}>{importStatus}</p>}
+                            </div>
+                        )}
+
+                        {/* CSV Import Results Section */}
+                        {studentSubTab === 'importResults' && (
+                            <div style={{ ...styles.card, marginBottom: '30px', backgroundColor: '#e8f5e9' }}>
+                                <h3>📊 Import Results from CSV</h3>
+                                <p style={{ marginBottom: '15px', color: '#666' }}>
+                                    Upload a CSV file to import multiple students and their results at once.
+                                </p>
+
+                                <div style={{ marginBottom: '15px' }}>
+                                    <button
+                                        onClick={() => {
+                                            const csvContent = "RegNumber,Password,Name,Class,Mathematics,English,Physics,Chemistry,Biology,Economics\nSCH/2026/001,password123,Ibrahim Musa,SS3 A,85,78,90,72,88,75\nSCH/2026/002,pass,Chidinma Okeke,SS3 B,65,88,75,80,70,82\nSCH/2026/003,student123,Adebayo Johnson,SS2 A,92,85,78,88,90,86";
+                                            const blob = new Blob([csvContent], { type: 'text/csv' });
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = 'student_results_template.csv';
+                                            a.click();
+                                        }}
+                                        className="btn btn-secondary"
+                                        style={{ marginRight: '10px' }}
+                                    >
+                                        📥 Download CSV Template
+                                    </button>
+                                </div>
+
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={(e) => setCsvFile(e.target.files[0])}
+                                    style={styles.input}
+                                />
+
+                                <button
+                                    onClick={async () => {
+                                        if (!csvFile) {
+                                            setImportStatus('Please select a CSV file');
+                                            return;
+                                        }
+
+                                        setImportStatus('Importing...');
+                                        const formData = new FormData();
+                                        formData.append('csv', csvFile);
+
+                                        try {
+                                            const res = await fetch(`${API_BASE_URL}/api/import-results`, {
+                                                method: 'POST',
+                                                body: formData
+                                            });
+                                            const data = await res.json();
+
+                                            if (data.success) {
+                                                setImportStatus(`✅ ${data.message}`);
+                                                fetchStudents();
+                                                setCsvFile(null);
+                                            } else {
+                                                setImportStatus('❌ ' + data.message);
+                                            }
+                                        } catch (err) {
+                                            setImportStatus('❌ Error importing CSV');
+                                            console.error(err);
+                                        }
+                                    }}
+                                    className="btn btn-primary"
+                                    style={{ marginTop: '10px' }}
+                                >
+                                    Upload & Import CSV
+                                </button>
+
+                                {importStatus && <p style={{ marginTop: '15px', fontWeight: 'bold', color: importStatus.includes('✅') ? 'green' : 'red' }}>{importStatus}</p>}
+                            </div>
+                        )}
+
+                        {/* Add/Edit Student Form */}
+                        {studentSubTab === 'add' && (
+                            <div style={{ ...styles.card, marginBottom: '30px' }}>
+                                <h3>{editingStudent ? 'Edit Student' : 'Add New Student'}</h3>
+                                <form onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    setStudentStatus('Saving...');
+
+                                    const method = editingStudent ? 'PUT' : 'POST';
+                                    const url = editingStudent
+                                        ? `${API_BASE_URL}/api/students/${encodeURIComponent(editingStudent)}`
+                                        : `${API_BASE_URL}/api/students`;
+
+                                    try {
+                                        const res = await fetch(url, {
+                                            method,
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(studentForm)
+                                        });
+                                        const data = await res.json();
+
+                                        if (data.success) {
+                                            setStudentStatus('✅ Student saved successfully!');
+                                            fetchStudents();
+                                            setStudentForm({ regNumber: '', password: '', name: '', class: '', results: [] });
+                                            setEditingStudent(null);
+                                        } else {
+                                            setStudentStatus('❌ ' + data.message);
+                                        }
+                                    } catch (err) {
+                                        setStudentStatus('❌ Error saving student');
+                                        console.error(err);
+                                    }
+                                }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }} className="grid-responsive">
+                                        <div style={styles.formGroup}>
+                                            <label style={styles.label}>Registration Number</label>
+                                            <input
+                                                type="text"
+                                                value={studentForm.regNumber}
+                                                onChange={(e) => setStudentForm({ ...studentForm, regNumber: e.target.value })}
+                                                style={styles.input}
+                                                required
+                                                disabled={editingStudent}
+                                            />
+                                        </div>
+                                        <div style={styles.formGroup}>
+                                            <label style={styles.label}>Password</label>
+                                            <input
+                                                type="text"
+                                                value={studentForm.password}
+                                                onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })}
+                                                style={styles.input}
+                                                required
+                                            />
+                                        </div>
+                                        <div style={styles.formGroup}>
+                                            <label style={styles.label}>Full Name</label>
+                                            <input
+                                                type="text"
+                                                value={studentForm.name}
+                                                onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })}
+                                                style={styles.input}
+                                                required
+                                            />
+                                        </div>
+                                        <div style={styles.formGroup}>
+                                            <label style={styles.label}>Class</label>
+                                            <input
+                                                type="text"
+                                                value={studentForm.class}
+                                                onChange={(e) => setStudentForm({ ...studentForm, class: e.target.value })}
+                                                style={styles.input}
+                                                placeholder="e.g. SS3 A"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                                        <button type="submit" className="btn btn-primary">
+                                            {editingStudent ? 'Update Student' : 'Add Student'}
+                                        </button>
+                                        {editingStudent && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setEditingStudent(null);
+                                                    setStudentForm({ regNumber: '', password: '', name: '', class: '', results: [] });
+                                                    setStudentStatus('');
+                                                }}
+                                                className="btn btn-secondary"
+                                            >
+                                                Cancel
+                                            </button>
+                                        )}
+                                    </div>
+                                    {studentStatus && <p style={{ marginTop: '15px', fontWeight: 'bold', color: studentStatus.includes('✅') ? 'green' : 'red' }}>{studentStatus}</p>}
+                                </form>
+                            </div>
+                        )}
+
+                        {/* Students List */}
+                        {studentSubTab === 'list' && (
+                            <div style={styles.card}>
+                                <h3>All Students ({students.length})</h3>
+                                {students.length === 0 ? (
+                                    <p style={{ color: '#666', textAlign: 'center', padding: '20px' }}>No students found. Add students manually or import from CSV.</p>
+                                ) : (
+                                    <div style={{ overflowX: 'auto' }}>
+                                        <table style={styles.table}>
+                                            <thead>
+                                                <tr>
+                                                    <th style={styles.th}>Reg Number</th>
+                                                    <th style={styles.th}>Name</th>
+                                                    <th style={styles.th}>Class</th>
+                                                    <th style={styles.th}>Results</th>
+                                                    <th style={styles.th}>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {students.map((student) => (
+                                                    <tr key={student.regNumber}>
+                                                        <td style={styles.td}>{student.regNumber}</td>
+                                                        <td style={styles.td}>{student.name}</td>
+                                                        <td style={styles.td}>{student.class}</td>
+                                                        <td style={styles.td}>{student.results?.length || 0} subjects</td>
+                                                        <td style={styles.td}>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditingStudent(student.regNumber);
+                                                                    setStudentForm({
+                                                                        regNumber: student.regNumber,
+                                                                        password: '',
+                                                                        name: student.name,
+                                                                        class: student.class,
+                                                                        results: student.results || []
                                                                     });
-                                                                    const data = await res.json();
-                                                                    if (data.success) {
-                                                                        fetchStudents();
+                                                                    setStudentSubTab('add');
+                                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                                }}
+                                                                className="btn btn-secondary"
+                                                                style={{ marginRight: '5px', padding: '5px 10px', fontSize: '0.9rem' }}
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (window.confirm(`Delete ${student.name}?`)) {
+                                                                        try {
+                                                                            const res = await fetch(`${API_BASE_URL}/api/students/${encodeURIComponent(student.regNumber)}`, {
+                                                                                method: 'DELETE'
+                                                                            });
+                                                                            const data = await res.json();
+                                                                            if (data.success) {
+                                                                                fetchStudents();
+                                                                            }
+                                                                        } catch (err) {
+                                                                            console.error(err);
+                                                                        }
                                                                     }
-                                                                } catch (err) {
-                                                                    console.error(err);
-                                                                }
-                                                            }
-                                                        }}
-                                                        className="btn"
-                                                        style={{ backgroundColor: '#dc3545', color: 'white', padding: '5px 10px', fontSize: '0.9rem' }}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                                                }}
+                                                                className="btn"
+                                                                style={{ backgroundColor: '#dc3545', color: 'white', padding: '5px 10px', fontSize: '0.9rem' }}
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
-                </div>
-            )}
+                );
+            })()}
+
             {/* Messages Tab */}
             {activeTab === 'messages' && (
                 <div style={{ ...styles.card, maxWidth: '1000px', margin: '0 auto' }}>

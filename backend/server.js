@@ -449,6 +449,48 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
     }
 });
 
+// Import Students Only from CSV (Bulk Import)
+app.post('/api/import-students', uploadMemory.single('csv'), async (req, res) => {
+    await connectDB();
+    const file = req.file;
+    if (!file) return res.status(400).json({ message: 'No file uploaded' });
+
+    try {
+        const lines = file.buffer.toString('utf8').split('\n').filter(l => l.trim());
+        if (lines.length < 2) return res.status(400).json({ message: 'Invalid CSV or empty data' });
+
+        let importedCount = 0;
+        // Start from index 1 to skip headers
+        for (let i = 1; i < lines.length; i++) {
+            // Simply split by comma (assuming no commas in the values like names for a basic CSV)
+            const values = lines[i].split(',').map(v => v.trim());
+            // Need at least 4 fields: RegNumber, Password, Name, Class
+            if (values.length < 4) continue;
+
+            const [regNumber, password, name, studentClass] = values;
+
+            if (!regNumber || !password || !name || !studentClass) continue;
+
+            // Upsert student with basic info, leaving results empty if new
+            // We use $setOnInsert for results so we don't overwrite existing results
+            await Student.findOneAndUpdate(
+                { regNumber },
+                {
+                    $set: { password, name, class: studentClass },
+                    $setOnInsert: { results: [] }
+                },
+                { upsert: true, new: true }
+            );
+            importedCount++;
+        }
+
+        res.json({ success: true, message: `Successfully imported ${importedCount} students`, count: importedCount });
+
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Import failed: ' + err.message });
+    }
+});
+
 // --- Contact API ---
 app.get('/api/contacts', async (req, res) => {
     await connectDB();
