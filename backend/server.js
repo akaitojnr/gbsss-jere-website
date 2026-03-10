@@ -449,6 +449,81 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
     }
 });
 
+// Import Results for a Single Subject from CSV
+app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, res) => {
+    await connectDB();
+    const file = req.file;
+    const { subject } = req.body;
+
+    if (!file) return res.status(400).json({ message: 'No file uploaded' });
+    if (!subject) return res.status(400).json({ message: 'Subject is required' });
+
+    try {
+        const lines = file.buffer.toString('utf8').split('\n').filter(l => l.trim());
+        if (lines.length < 2) return res.status(400).json({ message: 'Invalid CSV or empty data' });
+
+        const calculateGrade = (score) => {
+            if (score >= 75) return 'A';
+            if (score >= 70) return 'B2';
+            if (score >= 65) return 'B3';
+            if (score >= 60) return 'C4';
+            if (score >= 55) return 'C5';
+            if (score >= 50) return 'C6';
+            if (score >= 45) return 'D7';
+            if (score >= 40) return 'E8';
+            return 'F9';
+        };
+
+        let updatedCount = 0;
+        let notFoundCount = 0;
+
+        // Start from index 1 to skip headers (RegNumber, Score)
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(v => v.trim());
+            if (values.length < 2) continue;
+
+            const [regNumber, scoreStr] = values;
+            const score = parseInt(scoreStr);
+
+            if (!regNumber || isNaN(score) || score < 0) continue;
+
+            const student = await Student.findOne({ regNumber });
+
+            if (student) {
+                const grade = calculateGrade(score);
+
+                // Check if subject already exists for student
+                const existingResultIndex = student.results.findIndex(r => r.subject === subject);
+
+                if (existingResultIndex !== -1) {
+                    // Update existing result
+                    student.results[existingResultIndex].score = score;
+                    student.results[existingResultIndex].grade = grade;
+                } else {
+                    // Add new result
+                    student.results.push({ subject, score, grade });
+                }
+
+                await student.save();
+                updatedCount++;
+            } else {
+                notFoundCount++;
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Successfully updated ${updatedCount} students.` +
+                (notFoundCount > 0 ? ` ${notFoundCount} students not found.` : ''),
+            updatedCount,
+            notFoundCount
+        });
+
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Import failed: ' + err.message });
+    }
+});
+
 // Import Students Only from CSV (Bulk Import)
 app.post('/api/import-students', uploadMemory.single('csv'), async (req, res) => {
     await connectDB();

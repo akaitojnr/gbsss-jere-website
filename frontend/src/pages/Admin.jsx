@@ -2084,77 +2084,168 @@ const Admin = () => {
                         )}
 
                         {/* CSV Import Results Section */}
-                        {studentSubTab === 'importResults' && (
-                            <div style={{ ...styles.card, marginBottom: '30px', backgroundColor: '#e8f5e9' }}>
-                                <h3>📊 Import Results from CSV</h3>
-                                <p style={{ marginBottom: '15px', color: '#666' }}>
-                                    Upload a CSV file to import multiple students and their results at once.
-                                </p>
+                        {studentSubTab === 'importResults' && (() => {
+                            // We need a local state to toggle between Full Import and Single Subject Import
+                            const [importMode, setImportMode] = React.useState('subject'); // 'full' or 'subject'
+                            const [selectedSubject, setSelectedSubject] = React.useState('');
 
-                                <div style={{ marginBottom: '15px' }}>
+                            return (
+                                <div style={{ ...styles.card, marginBottom: '30px', backgroundColor: '#e8f5e9' }}>
+                                    <h3>📊 Import Results from CSV</h3>
+
+                                    <div style={{ marginBottom: '20px', display: 'flex', gap: '15px' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                            <input
+                                                type="radio"
+                                                checked={importMode === 'subject'}
+                                                onChange={() => setImportMode('subject')}
+                                                style={{ marginRight: '8px' }}
+                                            />
+                                            Single Subject Import
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                            <input
+                                                type="radio"
+                                                checked={importMode === 'full'}
+                                                onChange={() => setImportMode('full')}
+                                                style={{ marginRight: '8px' }}
+                                            />
+                                            Full Results Import
+                                        </label>
+                                    </div>
+
+                                    {importMode === 'subject' && (
+                                        <>
+                                            <p style={{ marginBottom: '15px', color: '#666' }}>
+                                                Upload results for a specific subject. Only students that already exist in the system will be updated.<br />
+                                                CSV Format: <b>RegNumber, Score</b>
+                                            </p>
+
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <label style={{ ...styles.label, display: 'block', marginBottom: '8px' }}>Select Subject:</label>
+                                                <select
+                                                    value={selectedSubject}
+                                                    onChange={(e) => setSelectedSubject(e.target.value)}
+                                                    style={{ ...styles.input, width: '100%', maxWidth: '300px' }}
+                                                >
+                                                    <option value="">-- Select Subject --</option>
+                                                    <option value="Mathematics">Mathematics</option>
+                                                    <option value="English">English</option>
+                                                    <option value="Physics">Physics</option>
+                                                    <option value="Chemistry">Chemistry</option>
+                                                    <option value="Biology">Biology</option>
+                                                    <option value="Economics">Economics</option>
+                                                    <option value="Civic Education">Civic Education</option>
+                                                </select>
+                                            </div>
+
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <button
+                                                    onClick={() => {
+                                                        const csvContent = "RegNumber,Score\nSCH/2026/001,85\nSCH/2026/002,65";
+                                                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                                                        const url = window.URL.createObjectURL(blob);
+                                                        const a = document.createElement('a');
+                                                        a.href = url;
+                                                        a.download = 'single_subject_template.csv';
+                                                        a.click();
+                                                    }}
+                                                    className="btn btn-secondary"
+                                                    style={{ marginRight: '10px' }}
+                                                >
+                                                    📥 Download Subject Template
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {importMode === 'full' && (
+                                        <>
+                                            <p style={{ marginBottom: '15px', color: '#666' }}>
+                                                Upload a CSV file to import multiple students and their results at once.<br />
+                                                Format: <b>RegNumber, Password, Name, Class, subject1, subject2...</b>
+                                            </p>
+
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <button
+                                                    onClick={() => {
+                                                        const csvContent = "RegNumber,Password,Name,Class,Mathematics,English,Physics\nSCH/2026/001,pass123,John Doe,SS1 A,85,78,90";
+                                                        const blob = new Blob([csvContent], { type: 'text/csv' });
+                                                        const url = window.URL.createObjectURL(blob);
+                                                        const a = document.createElement('a');
+                                                        a.href = url;
+                                                        a.download = 'full_results_template.csv';
+                                                        a.click();
+                                                    }}
+                                                    className="btn btn-secondary"
+                                                    style={{ marginRight: '10px' }}
+                                                >
+                                                    📥 Download Full Template
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    <input
+                                        type="file"
+                                        accept=".csv"
+                                        onChange={(e) => setCsvFile(e.target.files[0])}
+                                        style={styles.input}
+                                    />
+
                                     <button
-                                        onClick={() => {
-                                            const csvContent = "RegNumber,Password,Name,Class,Mathematics,English,Physics,Chemistry,Biology,Economics\nSCH/2026/001,password123,Ibrahim Musa,SS3 A,85,78,90,72,88,75\nSCH/2026/002,pass,Chidinma Okeke,SS3 B,65,88,75,80,70,82\nSCH/2026/003,student123,Adebayo Johnson,SS2 A,92,85,78,88,90,86";
-                                            const blob = new Blob([csvContent], { type: 'text/csv' });
-                                            const url = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = url;
-                                            a.download = 'student_results_template.csv';
-                                            a.click();
-                                        }}
-                                        className="btn btn-secondary"
-                                        style={{ marginRight: '10px' }}
-                                    >
-                                        📥 Download CSV Template
-                                    </button>
-                                </div>
-
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    onChange={(e) => setCsvFile(e.target.files[0])}
-                                    style={styles.input}
-                                />
-
-                                <button
-                                    onClick={async () => {
-                                        if (!csvFile) {
-                                            setImportStatus('Please select a CSV file');
-                                            return;
-                                        }
-
-                                        setImportStatus('Importing...');
-                                        const formData = new FormData();
-                                        formData.append('csv', csvFile);
-
-                                        try {
-                                            const res = await fetch(`${API_BASE_URL}/api/import-results`, {
-                                                method: 'POST',
-                                                body: formData
-                                            });
-                                            const data = await res.json();
-
-                                            if (data.success) {
-                                                setImportStatus(`✅ ${data.message}`);
-                                                fetchStudents();
-                                                setCsvFile(null);
-                                            } else {
-                                                setImportStatus('❌ ' + data.message);
+                                        onClick={async () => {
+                                            if (!csvFile) {
+                                                setImportStatus('Please select a CSV file');
+                                                return;
                                             }
-                                        } catch (err) {
-                                            setImportStatus('❌ Error importing CSV');
-                                            console.error(err);
-                                        }
-                                    }}
-                                    className="btn btn-primary"
-                                    style={{ marginTop: '10px' }}
-                                >
-                                    Upload & Import CSV
-                                </button>
 
-                                {importStatus && <p style={{ marginTop: '15px', fontWeight: 'bold', color: importStatus.includes('✅') ? 'green' : 'red' }}>{importStatus}</p>}
-                            </div>
-                        )}
+                                            if (importMode === 'subject' && !selectedSubject) {
+                                                setImportStatus('Please select a subject');
+                                                return;
+                                            }
+
+                                            setImportStatus('Importing...');
+                                            const formData = new FormData();
+                                            formData.append('csv', csvFile);
+
+                                            if (importMode === 'subject') {
+                                                formData.append('subject', selectedSubject);
+                                            }
+
+                                            const endpoint = importMode === 'subject'
+                                                ? '/api/import-subject-results'
+                                                : '/api/import-results';
+
+                                            try {
+                                                const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+                                                    method: 'POST',
+                                                    body: formData
+                                                });
+                                                const data = await res.json();
+
+                                                if (data.success) {
+                                                    setImportStatus(`✅ ${data.message}`);
+                                                    fetchStudents();
+                                                    setCsvFile(null);
+                                                } else {
+                                                    setImportStatus('❌ ' + data.message);
+                                                }
+                                            } catch (err) {
+                                                setImportStatus('❌ Error importing CSV');
+                                                console.error(err);
+                                            }
+                                        }}
+                                        className="btn btn-primary"
+                                        style={{ marginTop: '10px' }}
+                                    >
+                                        Upload & Import CSV
+                                    </button>
+
+                                    {importStatus && <p style={{ marginTop: '15px', fontWeight: 'bold', color: importStatus.includes('✅') ? 'green' : 'red' }}>{importStatus}</p>}
+                                </div>
+                            );
+                        })()}
 
                         {/* Add/Edit Student Form */}
                         {studentSubTab === 'add' && (
