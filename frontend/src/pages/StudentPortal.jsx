@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { QRCodeSVG } from 'qrcode.react';
 import { useConfig } from '../context/ConfigContext';
 import { API_BASE_URL } from '../config';
 
@@ -337,15 +338,19 @@ const StudentPortal = () => {
                                     </tfoot>
                                 </table>
 
-                                {/* Signatures Section */}
-                                <div style={styles.signatureSection}>
-                                    <div style={styles.sigBox}>
-                                        <div style={styles.sigLine}></div>
-                                        <div>Class Teacher's Signature</div>
+                                {/* QR Code Authentication Section */}
+                                <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                                    <div style={{ marginBottom: '10px', fontSize: '0.9rem', color: '#555' }}>
+                                        <strong>Scan to Verify Authenticity</strong>
                                     </div>
-                                    <div style={styles.sigBox}>
-                                        <div style={styles.sigLine}></div>
-                                        <div>Principal's Signature & Stamp</div>
+                                    <QRCodeSVG
+                                        value={`${window.location.origin}/verify?reg=${encodeURIComponent(student.regNumber)}`}
+                                        size={100}
+                                        level="H"
+                                        includeMargin={false}
+                                    />
+                                    <div style={{ marginTop: '10px', fontSize: '0.8rem', color: '#777' }}>
+                                        This is a computer-generated document. No signature is required.
                                     </div>
                                 </div>
                             </div>

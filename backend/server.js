@@ -326,6 +326,21 @@ app.get('/api/students', async (req, res) => {
     }
 });
 
+// Verify Student Result (Public via QR Code)
+app.get('/api/students/verify/:regNumber', async (req, res) => {
+    await connectDB();
+    const { regNumber } = req.params;
+    try {
+        // Exclude password for security
+        const student = await Student.findOne({ regNumber }, '-password');
+        if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+
+        res.json({ success: true, student });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Verification lookup failed' });
+    }
+});
+
 // Add New Student
 app.post('/api/students', async (req, res) => {
     await connectDB();
