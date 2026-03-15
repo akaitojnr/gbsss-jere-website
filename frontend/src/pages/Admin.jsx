@@ -1996,9 +1996,13 @@ const Admin = () => {
                                     setStudentStatus('Recalculating rankings...');
                                     try {
                                         for (const cls of classesToProcess) {
-                                            await fetch(`${API_BASE_URL}/api/students/calculate-rankings/${encodeURIComponent(cls)}`, { method: 'POST' });
+                                            const res = await fetch(`${API_BASE_URL}/api/students/calculate-rankings/${encodeURIComponent(cls)}`, { method: 'POST' });
+                                            const data = await res.json();
+                                            if (data.success && data.summary) {
+                                                console.log(`Rankings for ${cls}:`, data.summary);
+                                            }
                                         }
-                                        alert('✅ Rankings recalculated successfully!');
+                                        alert('✅ Rankings recalculated successfully! Check the student list for updated positions.');
                                         fetchStudents();
                                     } catch (err) {
                                         alert('❌ Error recalculating rankings');

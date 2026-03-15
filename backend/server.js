@@ -297,6 +297,84 @@ app.delete('/api/news/:id', async (req, res) => {
     }
 });
 
+// Helpers
+const calculateGrade = (score) => {
+    if (score >= 75) return 'A';
+    if (score >= 70) return 'B2';
+    if (score >= 65) return 'B3';
+    if (score >= 60) return 'C4';
+    if (score >= 55) return 'C5';
+    if (score >= 50) return 'C6';
+    if (score >= 45) return 'D7';
+    if (score >= 40) return 'E8';
+    return 'F9';
+};
+
+const calculateClassRankings = async (className) => {
+    console.log(`Calculating rankings for class: ${className}`);
+    const summary = { class: className, studentCount: 0, updates: [] };
+    try {
+        const students = await Student.find({ class: className });
+        if (students.length === 0) {
+            console.log(`No students found in class: ${className}`);
+            return { ...summary, message: 'No students found' };
+        }
+
+        summary.studentCount = students.length;
+
+        // Calculate total scores
+        const studentScores = students.map(student => {
+            const totalScore = (student.results || []).reduce((sum, res) => sum + (res.score || 0), 0);
+            return { id: student._id, totalScore, name: student.name };
+        });
+
+        // Sort by total score descending
+        studentScores.sort((a, b) => b.totalScore - a.totalScore);
+
+        // Assign positions
+        let currentRank = 1;
+        for (let i = 0; i < studentScores.length; i++) {
+            // Handle ties
+            if (i > 0 && studentScores[i].totalScore < studentScores[i - 1].totalScore) {
+                currentRank = i + 1;
+            }
+
+            const suffix = (rank) => {
+                const j = rank % 10, k = rank % 100;
+                if (j == 1 && k != 11) return "ST";
+                if (j == 2 && k != 12) return "ND";
+                if (j == 3 && k != 13) return "RD";
+                return "TH";
+            };
+
+            const positionString = `${currentRank}${suffix(currentRank)}`;
+            console.log(`Assigning ${positionString} to ${studentScores[i].name} (Score: ${studentScores[i].totalScore})`);
+            
+            await Student.updateOne(
+                { _id: studentScores[i].id },
+                { $set: { position: positionString } }
+            );
+            
+            summary.updates.push({ name: studentScores[i].name, position: positionString, score: studentScores[i].totalScore });
+        }
+        console.log(`Rankings updated for ${className}`);
+        return { ...summary, success: true };
+    } catch (error) {
+        console.error(`Error calculating rankings for ${className}:`, error);
+        return { ...summary, success: false, error: error.message };
+    }
+};
+
+// Admin Login (moved up for organization)
+app.post('/api/admin/login', async (req, res) => {
+    const { username, password } = req.body;
+    if (username === ADMIN_USER && password === ADMIN_PASS) {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false, message: 'Invalid Admin credentials' });
+    }
+});
+
 // Student Login
 app.post('/api/login', async (req, res) => {
     await connectDB();
@@ -369,6 +447,18 @@ app.post('/api/students', async (req, res) => {
     }
 });
 
+// API Endpoint to manually trigger ranking calculation
+app.post('/api/students/calculate-rankings/:class', async (req, res) => {
+    await connectDB();
+    const { class: className } = req.params;
+    try {
+        const summary = await calculateClassRankings(className);
+        res.json({ success: true, message: `Rankings updated for ${className}`, summary });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // Update Student
 app.put('/api/students/:regNumber', async (req, res) => {
     await connectDB();
@@ -417,65 +507,6 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
         const headers = lines[0].split(',').map(h => h.trim());
         const subjectColumns = headers.slice(4);
 
-        const calculateGrade = (score) => {
-            if (score >= 75) return 'A';
-            if (score >= 70) return 'B2';
-            if (score >= 65) return 'B3';
-            if (score >= 60) return 'C4';
-            if (score >= 55) return 'C5';
-            if (score >= 50) return 'C6';
-            if (score >= 45) return 'D7';
-            if (score >= 40) return 'E8';
-            return 'F9';
-        };
-
-        // Helper to calculate rankings for a class
-        const calculateClassRankings = async (className) => {
-            const students = await Student.find({ class: className });
-            if (students.length === 0) return;
-
-            // Calculate total scores
-            const studentScores = students.map(student => {
-                const totalScore = student.results.reduce((sum, res) => sum + (res.score || 0), 0);
-                return { id: student._id, totalScore, class: student.class };
-            });
-
-            // Sort by total score descending
-            studentScores.sort((a, b) => b.totalScore - a.totalScore);
-
-            // Assign positions
-            let currentRank = 1;
-            for (let i = 0; i < studentScores.length; i++) {
-                // Handle ties
-                if (i > 0 && studentScores[i].totalScore < studentScores[i - 1].totalScore) {
-                    currentRank = i + 1;
-                }
-
-                const suffix = (rank) => {
-                    const j = rank % 10, k = rank % 100;
-                    if (j == 1 && k != 11) return "ST";
-                    if (j == 2 && k != 12) return "ND";
-                    if (j == 3 && k != 13) return "RD";
-                    return "TH";
-                };
-
-                const position = `${currentRank}${suffix(currentRank)}`;
-                await Student.findByIdAndUpdate(studentScores[i].id, { position });
-            }
-        };
-
-        // API Endpoint to manually trigger ranking calculation
-        app.post('/api/students/calculate-rankings/:class', async (req, res) => {
-            await connectDB();
-            const { class: className } = req.params;
-            try {
-                await calculateClassRankings(className);
-                res.json({ success: true, message: `Rankings calculated for ${className}` });
-            } catch (err) {
-                res.status(500).json({ success: false, message: err.message });
-            }
-        });
-
         let importedCount = 0;
         const affectedClasses = new Set(); // To track classes whose rankings need recalculation
         for (let i = 1; i < lines.length; i++) {
@@ -511,7 +542,6 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
             await calculateClassRankings(className);
         }
 
-        // No file to unlink with memory storage
         res.json({ success: true, message: `Imported ${importedCount} students and recalculated rankings for ${affectedClasses.size} classes`, count: importedCount });
 
     } catch (err) {
@@ -519,7 +549,6 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
     }
 });
 
-// Import Results for a Single Subject from CSV
 app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, res) => {
     await connectDB();
     const file = req.file;
@@ -531,18 +560,6 @@ app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, 
     try {
         const lines = file.buffer.toString('utf8').split('\n').filter(l => l.trim());
         if (lines.length < 2) return res.status(400).json({ message: 'Invalid CSV or empty data' });
-
-        const calculateGrade = (score) => {
-            if (score >= 75) return 'A';
-            if (score >= 70) return 'B2';
-            if (score >= 65) return 'B3';
-            if (score >= 60) return 'C4';
-            if (score >= 55) return 'C5';
-            if (score >= 50) return 'C6';
-            if (score >= 45) return 'D7';
-            if (score >= 40) return 'E8';
-            return 'F9';
-        };
 
         let updatedCount = 0;
         let notFoundCount = 0;
