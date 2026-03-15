@@ -11,6 +11,7 @@ import Contact from './pages/Contact';
 import Gallery from './pages/Gallery';
 import Admin from './pages/Admin';
 import VerifyResult from './pages/VerifyResult';
+import CheckResult from './pages/CheckResult';
 import { ConfigProvider } from './context/ConfigContext';
 
 // Deployment Trigger: 2026-02-15 21:40
@@ -28,6 +29,7 @@ function App() {
               <Route path="/admissions" element={<Admissions />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/portal" element={<StudentPortal />} />
+              <Route path="/check-result" element={<CheckResult />} />
               <Route path="/verify" element={<VerifyResult />} />
               <Route path="/news" element={<News />} />
               <Route path="/contact" element={<Contact />} />

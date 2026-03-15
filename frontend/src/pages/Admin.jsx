@@ -1973,7 +1973,20 @@ const Admin = () => {
 
                 return (
                     <div>
-                        <h2>Student & Result Management</h2>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h2 style={{ margin: 0 }}>Student & Result Management</h2>
+                            <button
+                                onClick={() => {
+                                    const link = `${window.location.origin}/check-result`;
+                                    navigator.clipboard.writeText(link);
+                                    alert('Link copied to clipboard: ' + link);
+                                }}
+                                className="btn"
+                                style={{ backgroundColor: '#17a2b8', color: 'white' }}
+                            >
+                                🔗 Copy Direct Result Link
+                            </button>
+                        </div>
 
                         {/* Sub-tabs Navigation */}
                         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
