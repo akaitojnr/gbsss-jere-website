@@ -362,9 +362,8 @@ app.post('/api/students', async (req, res) => {
             results: results || []
         });
         await newStudent.save();
-
-        const { password: _, ...studentData } = newStudent.toObject();
-        res.json({ success: true, student: studentData });
+        await calculateClassRankings(studentClass);
+        res.json({ success: true, message: 'Student added successfully' });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -387,8 +386,8 @@ app.put('/api/students/:regNumber', async (req, res) => {
         if (results !== undefined) student.results = results;
 
         await student.save();
-        const { password: _, ...studentData } = student.toObject();
-        res.json({ success: true, student: studentData });
+        await calculateClassRankings(student.class);
+        res.json({ success: true, message: 'Student updated successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Update failed' });
     }
@@ -430,7 +429,55 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
             return 'F9';
         };
 
+        // Helper to calculate rankings for a class
+        const calculateClassRankings = async (className) => {
+            const students = await Student.find({ class: className });
+            if (students.length === 0) return;
+
+            // Calculate total scores
+            const studentScores = students.map(student => {
+                const totalScore = student.results.reduce((sum, res) => sum + (res.score || 0), 0);
+                return { id: student._id, totalScore, class: student.class };
+            });
+
+            // Sort by total score descending
+            studentScores.sort((a, b) => b.totalScore - a.totalScore);
+
+            // Assign positions
+            let currentRank = 1;
+            for (let i = 0; i < studentScores.length; i++) {
+                // Handle ties
+                if (i > 0 && studentScores[i].totalScore < studentScores[i - 1].totalScore) {
+                    currentRank = i + 1;
+                }
+
+                const suffix = (rank) => {
+                    const j = rank % 10, k = rank % 100;
+                    if (j == 1 && k != 11) return "ST";
+                    if (j == 2 && k != 12) return "ND";
+                    if (j == 3 && k != 13) return "RD";
+                    return "TH";
+                };
+
+                const position = `${currentRank}${suffix(currentRank)}`;
+                await Student.findByIdAndUpdate(studentScores[i].id, { position });
+            }
+        };
+
+        // API Endpoint to manually trigger ranking calculation
+        app.post('/api/students/calculate-rankings/:class', async (req, res) => {
+            await connectDB();
+            const { class: className } = req.params;
+            try {
+                await calculateClassRankings(className);
+                res.json({ success: true, message: `Rankings calculated for ${className}` });
+            } catch (err) {
+                res.status(500).json({ success: false, message: err.message });
+            }
+        });
+
         let importedCount = 0;
+        const affectedClasses = new Set(); // To track classes whose rankings need recalculation
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(',').map(v => v.trim());
             if (values.length < 4) continue;
@@ -455,11 +502,17 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
                 { password, name, class: studentClass, results },
                 { upsert: true, new: true }
             );
+            affectedClasses.add(studentClass);
             importedCount++;
         }
 
+        // Recalculate rankings for all affected classes
+        for (const className of affectedClasses) {
+            await calculateClassRankings(className);
+        }
+
         // No file to unlink with memory storage
-        res.json({ success: true, message: `Imported ${importedCount} students`, count: importedCount });
+        res.json({ success: true, message: `Imported ${importedCount} students and recalculated rankings for ${affectedClasses.size} classes`, count: importedCount });
 
     } catch (err) {
         res.status(500).json({ message: 'Import failed: ' + err.message });
@@ -493,6 +546,7 @@ app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, 
 
         let updatedCount = 0;
         let notFoundCount = 0;
+        const affectedClasses = new Set();
 
         // Start from index 1 to skip headers (RegNumber, Score)
         for (let i = 1; i < lines.length; i++) {
@@ -522,15 +576,21 @@ app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, 
                 }
 
                 await student.save();
+                affectedClasses.add(student.class);
                 updatedCount++;
             } else {
                 notFoundCount++;
             }
         }
 
+        // Recalculate rankings for all affected classes
+        for (const className of affectedClasses) {
+            await calculateClassRankings(className);
+        }
+
         res.json({
             success: true,
-            message: `Successfully updated ${updatedCount} students.` +
+            message: `Successfully updated ${updatedCount} students for subject '${subject}' and recalculated rankings for ${affectedClasses.size} classes.` +
                 (notFoundCount > 0 ? ` ${notFoundCount} students not found.` : ''),
             updatedCount,
             notFoundCount
@@ -552,6 +612,7 @@ app.post('/api/import-students', uploadMemory.single('csv'), async (req, res) =>
         if (lines.length < 2) return res.status(400).json({ message: 'Invalid CSV or empty data' });
 
         let importedCount = 0;
+        const affectedClasses = new Set();
         // Start from index 1 to skip headers
         for (let i = 1; i < lines.length; i++) {
             // Simply split by comma (assuming no commas in the values like names for a basic CSV)
@@ -573,10 +634,16 @@ app.post('/api/import-students', uploadMemory.single('csv'), async (req, res) =>
                 },
                 { upsert: true, new: true }
             );
+            affectedClasses.add(studentClass);
             importedCount++;
         }
 
-        res.json({ success: true, message: `Successfully imported ${importedCount} students`, count: importedCount });
+        // Recalculate rankings for all affected classes
+        for (const className of affectedClasses) {
+            await calculateClassRankings(className);
+        }
+
+        res.json({ success: true, message: `Successfully imported ${importedCount} students and recalculated rankings for ${affectedClasses.size} classes`, count: importedCount });
 
     } catch (err) {
         res.status(500).json({ success: false, message: 'Import failed: ' + err.message });

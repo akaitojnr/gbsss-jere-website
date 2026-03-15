@@ -1986,6 +1986,30 @@ const Admin = () => {
                             >
                                 🔗 Copy Direct Result Link
                             </button>
+                            <button
+                                onClick={async () => {
+                                    const studentClass = prompt('Enter class name to recalculate rankings (e.g., SS3 A) or leave blank for all students:');
+                                    // Note: Direct "all" isn't implemented in backend yet, so we'll do per unique class if blank
+                                    const uniqueClasses = [...new Set(students.map(s => s.class))];
+                                    const classesToProcess = studentClass ? [studentClass] : uniqueClasses;
+                                    
+                                    setStudentStatus('Recalculating rankings...');
+                                    try {
+                                        for (const cls of classesToProcess) {
+                                            await fetch(`${API_BASE_URL}/api/students/calculate-rankings/${encodeURIComponent(cls)}`, { method: 'POST' });
+                                        }
+                                        alert('✅ Rankings recalculated successfully!');
+                                        fetchStudents();
+                                    } catch (err) {
+                                        alert('❌ Error recalculating rankings');
+                                    }
+                                    setStudentStatus('');
+                                }}
+                                className="btn"
+                                style={{ backgroundColor: '#28a745', color: 'white' }}
+                            >
+                                🔄 Recalculate Rankings
+                            </button>
                         </div>
 
                         {/* Sub-tabs Navigation */}
@@ -2386,6 +2410,8 @@ const Admin = () => {
                                                     <th style={styles.th}>Reg Number</th>
                                                     <th style={styles.th}>Name</th>
                                                     <th style={styles.th}>Class</th>
+                                                    <th style={styles.th}>Total Score</th>
+                                                    <th style={styles.th}>Position</th>
                                                     <th style={styles.th}>Results</th>
                                                     <th style={styles.th}>Actions</th>
                                                 </tr>
@@ -2396,6 +2422,8 @@ const Admin = () => {
                                                         <td style={styles.td}>{student.regNumber}</td>
                                                         <td style={styles.td}>{student.name}</td>
                                                         <td style={styles.td}>{student.class}</td>
+                                                        <td style={styles.td}>{student.results?.reduce((sum, r) => sum + (r.score || 0), 0) || 0}</td>
+                                                        <td style={styles.td}><span style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>{student.position || 'N/A'}</span></td>
                                                         <td style={styles.td}>{student.results?.length || 0} subjects</td>
                                                         <td style={styles.td}>
                                                             <button
