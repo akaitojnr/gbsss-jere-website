@@ -11,6 +11,7 @@ const studentSchema = new mongoose.Schema({
     password: { type: String, required: true },
     name: { type: String, required: true },
     class: { type: String, required: true },
+    position: { type: String, default: 'N/A' },
     results: [resultSchema]
 }, { timestamps: true });
 

@@ -165,6 +165,16 @@ const StudentPortal = () => {
 
     const videoCategories = ['All', 'Science', 'Arts', 'Commercial', 'General'];
 
+    const getRemark = (grade) => {
+        const g = grade?.toUpperCase();
+        if (g === 'A') return 'EXCELLENT';
+        if (['B2', 'B3'].includes(g)) return 'VERY GOOD';
+        if (['C4', 'C5', 'C6'].includes(g)) return 'GOOD';
+        if (['D7', 'E8'].includes(g)) return 'PASS';
+        if (g === 'F9') return 'FAIL';
+        return 'GOOD';
+    };
+
     if (student) {
         return (
             <div className="container" style={{ padding: '60px 20px' }}>
@@ -295,7 +305,7 @@ const StudentPortal = () => {
                                     <div style={styles.detailItem}><strong>CLASS:</strong> {student.class}</div>
                                     <div style={styles.detailItem}><strong>TERM:</strong> {config.academics?.currentTerm || 'First Term'}</div>
                                     <div style={styles.detailItem}><strong>SESSION:</strong> {config.academics?.currentSession || '2025/2026'}</div>
-                                    <div style={styles.detailItem}><strong>STATUS:</strong> PROMOTED</div>
+                                    <div style={styles.detailItem}><strong>CLASS POSITION:</strong> {student.position || 'N/A'}</div>
                                 </div>
 
                                 {/* Results Table */}
@@ -318,7 +328,7 @@ const StudentPortal = () => {
                                                 <td style={styles.rtd}>{result.score - Math.round(result.score * 0.4)}</td>
                                                 <td style={styles.rtd}>{result.score}</td>
                                                 <td style={styles.rtd}>{result.grade}</td>
-                                                <td style={styles.rtd}>{result.grade === 'A' ? 'EXCELLENT' : result.grade === 'B' ? 'VERY GOOD' : 'GOOD'}</td>
+                                                <td style={styles.rtd}>{getRemark(result.grade)}</td>
                                             </tr>
                                         ))}
                                     </tbody>

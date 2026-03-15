@@ -2284,7 +2284,7 @@ const Admin = () => {
                                         if (data.success) {
                                             setStudentStatus('✅ Student saved successfully!');
                                             fetchStudents();
-                                            setStudentForm({ regNumber: '', password: '', name: '', class: '', results: [] });
+                                            setStudentForm({ regNumber: '', password: '', name: '', class: '', position: '', results: [] });
                                             setEditingStudent(null);
                                         } else {
                                             setStudentStatus('❌ ' + data.message);
@@ -2337,6 +2337,16 @@ const Admin = () => {
                                                 required
                                             />
                                         </div>
+                                        <div style={styles.formGroup}>
+                                            <label style={styles.label}>Class Position</label>
+                                            <input
+                                                type="text"
+                                                value={studentForm.position}
+                                                onChange={(e) => setStudentForm({ ...studentForm, position: e.target.value })}
+                                                style={styles.input}
+                                                placeholder="e.g. 1ST"
+                                            />
+                                        </div>
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
@@ -2348,7 +2358,7 @@ const Admin = () => {
                                                 type="button"
                                                 onClick={() => {
                                                     setEditingStudent(null);
-                                                    setStudentForm({ regNumber: '', password: '', name: '', class: '', results: [] });
+                                                    setStudentForm({ regNumber: '', password: '', name: '', class: '', position: '', results: [] });
                                                     setStudentStatus('');
                                                 }}
                                                 className="btn btn-secondary"
@@ -2396,6 +2406,7 @@ const Admin = () => {
                                                                         password: '',
                                                                         name: student.name,
                                                                         class: student.class,
+                                                                        position: student.position || '',
                                                                         results: student.results || []
                                                                     });
                                                                     setStudentSubTab('add');

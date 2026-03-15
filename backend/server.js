@@ -344,7 +344,7 @@ app.get('/api/students/verify/:regNumber', async (req, res) => {
 // Add New Student
 app.post('/api/students', async (req, res) => {
     await connectDB();
-    const { regNumber, password, name, class: studentClass, results } = req.body;
+    const { regNumber, password, name, class: studentClass, position, results } = req.body;
     if (!regNumber || !password || !name || !studentClass) {
         return res.status(400).json({ success: false, message: 'Missing fields' });
     }
@@ -358,6 +358,7 @@ app.post('/api/students', async (req, res) => {
             password,
             name,
             class: studentClass,
+            position: position || 'N/A',
             results: results || []
         });
         await newStudent.save();
@@ -373,7 +374,7 @@ app.post('/api/students', async (req, res) => {
 app.put('/api/students/:regNumber', async (req, res) => {
     await connectDB();
     const { regNumber } = req.params;
-    const { password, name, class: studentClass, results } = req.body;
+    const { password, name, class: studentClass, position, results } = req.body;
 
     try {
         const student = await Student.findOne({ regNumber });
@@ -382,6 +383,7 @@ app.put('/api/students/:regNumber', async (req, res) => {
         if (password) student.password = password;
         if (name) student.name = name;
         if (studentClass) student.class = studentClass;
+        if (position !== undefined) student.position = position;
         if (results !== undefined) student.results = results;
 
         await student.save();
