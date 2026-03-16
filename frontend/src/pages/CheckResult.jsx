@@ -102,8 +102,6 @@ const CheckResult = () => {
                         <thead>
                             <tr>
                                 <th style={styles.rth}>SUBJECT</th>
-                                <th style={styles.rth}>CA (40)</th>
-                                <th style={styles.rth}>EXAM (60)</th>
                                 <th style={styles.rth}>TOTAL (100)</th>
                                 <th style={styles.rth}>GRADE</th>
                                 <th style={styles.rth}>REMARKS</th>
@@ -113,8 +111,6 @@ const CheckResult = () => {
                             {student.results.map((result, index) => (
                                 <tr key={index}>
                                     <td style={styles.rtd}><strong>{result.subject}</strong></td>
-                                    <td style={styles.rtd}>{Math.round(result.score * 0.4)}</td>
-                                    <td style={styles.rtd}>{result.score - Math.round(result.score * 0.4)}</td>
                                     <td style={styles.rtd}>{result.score}</td>
                                     <td style={styles.rtd}>{result.grade}</td>
                                     <td style={styles.rtd}>{getRemark(result.grade)}</td>
@@ -124,13 +120,11 @@ const CheckResult = () => {
                         <tfoot>
                             <tr style={{ background: '#f8f9fa' }}>
                                 <td style={styles.rtd}><strong>TOTAL SCORE:</strong></td>
-                                <td colSpan="2" style={styles.rtd}></td>
                                 <td style={styles.rtd}><strong>{student.results.reduce((sum, r) => sum + r.score, 0)}</strong></td>
                                 <td colSpan="2" style={styles.rtd}></td>
                             </tr>
                             <tr style={{ background: '#f8f9fa' }}>
                                 <td style={styles.rtd}><strong>AVERAGE:</strong></td>
-                                <td colSpan="2" style={styles.rtd}></td>
                                 <td style={styles.rtd}><strong>{(student.results.reduce((sum, r) => sum + r.score, 0) / student.results.length).toFixed(2)}%</strong></td>
                                 <td colSpan="2" style={styles.rtd}></td>
                             </tr>
@@ -226,11 +220,11 @@ const styles = {
     resultSheet: {
         backgroundColor: 'white',
         padding: '20px',
-        border: '1.5px solid #333',
-        marginTop: '10px',
+        marginTop: '0px',
         color: '#000',
-        maxWidth: '800px',
+        maxWidth: '750px',
         margin: '0 auto',
+        fontSize: '0.8rem',
     },
     resultHeader: {
         display: 'flex',
@@ -238,12 +232,12 @@ const styles = {
         justifyContent: 'center',
         gap: '20px',
         borderBottom: '1.5px solid #333',
-        paddingBottom: '10px',
-        marginBottom: '10px',
+        paddingBottom: '5px',
+        marginBottom: '5px',
     },
     resultLogo: {
-        width: '80px',
-        height: '80px',
+        width: '60px',
+        height: '60px',
         objectFit: 'contain',
     },
     schoolInfo: {
@@ -252,7 +246,7 @@ const styles = {
     schoolName: {
         margin: '0 0 2px 0',
         color: '#004d40',
-        fontSize: '1.5rem',
+        fontSize: '1.3rem',
         textTransform: 'uppercase',
     },
     schoolMotto: {
@@ -269,16 +263,16 @@ const styles = {
         fontSize: '1.2rem',
         fontWeight: 'bold',
         textDecoration: 'underline',
-        margin: '10px 0',
+        margin: '5px 0',
         textTransform: 'uppercase',
     },
     studentDetailsGrid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(2, 1fr)',
         gap: '10px',
-        marginBottom: '20px',
+        marginBottom: '10px',
         borderBottom: '1px solid #333',
-        paddingBottom: '10px',
+        paddingBottom: '5px',
     },
     detailItem: {
         fontSize: '0.9rem',
@@ -286,7 +280,7 @@ const styles = {
     resultTable: {
         width: '100%',
         borderCollapse: 'collapse',
-        marginBottom: '20px',
+        marginBottom: '10px',
     },
     rth: {
         border: '1px solid #333',
@@ -297,8 +291,8 @@ const styles = {
     },
     rtd: {
         border: '1px solid #333',
-        padding: '8px',
-        fontSize: '0.85rem',
+        padding: '4px',
+        fontSize: '0.8rem',
         textAlign: 'center',
     },
 };
