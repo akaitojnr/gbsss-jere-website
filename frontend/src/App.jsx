@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -14,30 +14,41 @@ import VerifyResult from './pages/VerifyResult';
 import CheckResult from './pages/CheckResult';
 import { ConfigProvider } from './context/ConfigContext';
 
-// Deployment Trigger: 2026-02-15 21:40
+const Layout = ({ children }) => {
+  const location = useLocation();
+  const cleanRoutes = ['/check-result', '/verify'];
+  const isCleanPage = cleanRoutes.includes(location.pathname);
+
+  return (
+    <div className="app-container">
+      {!isCleanPage && <Header />}
+      <main style={{ minHeight: '80vh' }}>
+        {children}
+      </main>
+      {!isCleanPage && <Footer />}
+    </div>
+  );
+};
+
 function App() {
   return (
     <ConfigProvider>
       <Router>
-        <div className="app-container">
-          <Header />
-          <main style={{ minHeight: '80vh' }}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/academics" element={<Academics />} />
-              <Route path="/admissions" element={<Admissions />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/portal" element={<StudentPortal />} />
-              <Route path="/check-result" element={<CheckResult />} />
-              <Route path="/verify" element={<VerifyResult />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/admin" element={<Admin />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/academics" element={<Academics />} />
+            <Route path="/admissions" element={<Admissions />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/portal" element={<StudentPortal />} />
+            <Route path="/check-result" element={<CheckResult />} />
+            <Route path="/verify" element={<VerifyResult />} />
+            <Route path="/news" element={<News />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/admin" element={<Admin />} />
+          </Routes>
+        </Layout>
       </Router>
     </ConfigProvider>
   );
