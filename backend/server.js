@@ -310,9 +310,9 @@ const calculateGrade = (score) => {
     return 'F9';
 };
 
-const calculateClassRankings = async (className) => {
-    console.log(`Calculating rankings for class: ${className}`);
-    const summary = { class: className, studentCount: 0, updates: [] };
+const calculateClassRankings = async (className, term, session) => {
+    console.log(`Calculating rankings for class: ${className} (${term || 'Default'} - ${session || 'Default'})`);
+    const summary = { class: className, term, session, studentCount: 0, updates: [] };
     try {
         const students = await Student.find({ class: className });
         if (students.length === 0) {
@@ -322,10 +322,17 @@ const calculateClassRankings = async (className) => {
 
         summary.studentCount = students.length;
 
-        // Calculate total scores
+        // Calculate total scores based on term/session or legacy
         const studentScores = students.map(student => {
-            const totalScore = (student.results || []).reduce((sum, res) => sum + (res.score || 0), 0);
-            return { id: student._id, totalScore, name: student.name };
+            let resultsToSum = [];
+            if (term && session) {
+                const termData = student.termlyResults.find(tr => tr.term === term && tr.session === session);
+                resultsToSum = termData ? termData.results : [];
+            } else {
+                resultsToSum = student.results || [];
+            }
+            const totalScore = resultsToSum.reduce((sum, res) => sum + (res.score || 0), 0);
+            return { id: student._id, student, totalScore, name: student.name };
         });
 
         // Sort by total score descending
@@ -334,7 +341,6 @@ const calculateClassRankings = async (className) => {
         // Assign positions
         let currentRank = 1;
         for (let i = 0; i < studentScores.length; i++) {
-            // Handle ties
             if (i > 0 && studentScores[i].totalScore < studentScores[i - 1].totalScore) {
                 currentRank = i + 1;
             }
@@ -348,16 +354,24 @@ const calculateClassRankings = async (className) => {
             };
 
             const positionString = `${currentRank}${suffix(currentRank)}`;
-            console.log(`Assigning ${positionString} to ${studentScores[i].name} (Score: ${studentScores[i].totalScore})`);
             
-            await Student.updateOne(
-                { _id: studentScores[i].id },
-                { $set: { position: positionString } }
-            );
+            if (term && session) {
+                // Update specific termly result entry
+                await Student.updateOne(
+                    { _id: studentScores[i].id, "termlyResults.term": term, "termlyResults.session": session },
+                    { $set: { "termlyResults.$.position": positionString } }
+                );
+            } else {
+                // Legacy update
+                await Student.updateOne(
+                    { _id: studentScores[i].id },
+                    { $set: { position: positionString } }
+                );
+            }
             
             summary.updates.push({ name: studentScores[i].name, position: positionString, score: studentScores[i].totalScore });
         }
-        console.log(`Rankings updated for ${className}`);
+        console.log(`Rankings updated for ${className} ${term || ''} ${session || ''}`);
         return { ...summary, success: true };
     } catch (error) {
         console.error(`Error calculating rankings for ${className}:`, error);
@@ -451,9 +465,10 @@ app.post('/api/students', async (req, res) => {
 app.post('/api/students/calculate-rankings/:class', async (req, res) => {
     await connectDB();
     const { class: className } = req.params;
+    const { term, session } = req.query;
     try {
-        const summary = await calculateClassRankings(className);
-        res.json({ success: true, message: `Rankings updated for ${className}`, summary });
+        const summary = await calculateClassRankings(className, term, session);
+        res.json({ success: true, message: `Rankings updated for ${className} ${term || ''} ${session || ''}`, summary });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -498,6 +513,7 @@ app.delete('/api/students/:regNumber', async (req, res) => {
 app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => {
     await connectDB();
     const file = req.file;
+    const { term, session } = req.body;
     if (!file) return res.status(400).json({ message: 'No file' });
 
     try {
@@ -508,7 +524,7 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
         const subjectColumns = headers.slice(4);
 
         let importedCount = 0;
-        const affectedClasses = new Set(); // To track classes whose rankings need recalculation
+        const affectedClasses = new Set();
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(',').map(v => v.trim());
             if (values.length < 4) continue;
@@ -527,22 +543,42 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
                 }
             }
 
-            // Upsert student
-            await Student.findOneAndUpdate(
-                { regNumber },
-                { password, name, class: studentClass, results },
-                { upsert: true, new: true }
-            );
+            if (term && session) {
+                const student = await Student.findOne({ regNumber });
+                if (student) {
+                    student.password = password;
+                    student.name = name;
+                    student.class = studentClass;
+                    const termIdx = student.termlyResults.findIndex(tr => tr.term === term && tr.session === session);
+                    if (termIdx !== -1) {
+                        student.termlyResults[termIdx].results = results;
+                    } else {
+                        student.termlyResults.push({ term, session, results });
+                    }
+                    await student.save();
+                } else {
+                    await Student.create({
+                        regNumber, password, name, class: studentClass,
+                        termlyResults: [{ term, session, results }]
+                    });
+                }
+            } else {
+                // Legacy upsert
+                await Student.findOneAndUpdate(
+                    { regNumber },
+                    { password, name, class: studentClass, results },
+                    { upsert: true, new: true }
+                );
+            }
             affectedClasses.add(studentClass);
             importedCount++;
         }
 
-        // Recalculate rankings for all affected classes
         for (const className of affectedClasses) {
-            await calculateClassRankings(className);
+            await calculateClassRankings(className, term, session);
         }
 
-        res.json({ success: true, message: `Imported ${importedCount} students and recalculated rankings for ${affectedClasses.size} classes`, count: importedCount });
+        res.json({ success: true, message: `Imported ${importedCount} students and recalculated rankings`, count: importedCount });
 
     } catch (err) {
         res.status(500).json({ message: 'Import failed: ' + err.message });
@@ -552,7 +588,7 @@ app.post('/api/import-results', uploadMemory.single('csv'), async (req, res) => 
 app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, res) => {
     await connectDB();
     const file = req.file;
-    const { subject } = req.body;
+    const { subject, term, session } = req.body;
 
     if (!file) return res.status(400).json({ message: 'No file uploaded' });
     if (!subject) return res.status(400).json({ message: 'Subject is required' });
@@ -565,7 +601,6 @@ app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, 
         let notFoundCount = 0;
         const affectedClasses = new Set();
 
-        // Start from index 1 to skip headers (RegNumber, Score)
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(',').map(v => v.trim());
             if (values.length < 2) continue;
@@ -580,16 +615,27 @@ app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, 
             if (student) {
                 const grade = calculateGrade(score);
 
-                // Check if subject already exists for student
-                const existingResultIndex = student.results.findIndex(r => r.subject === subject);
-
-                if (existingResultIndex !== -1) {
-                    // Update existing result
-                    student.results[existingResultIndex].score = score;
-                    student.results[existingResultIndex].grade = grade;
+                if (term && session) {
+                    let termIdx = student.termlyResults.findIndex(tr => tr.term === term && tr.session === session);
+                    if (termIdx === -1) {
+                        student.termlyResults.push({ term, session, results: [] });
+                        termIdx = student.termlyResults.length - 1;
+                    }
+                    const existingResIdx = student.termlyResults[termIdx].results.findIndex(r => r.subject === subject);
+                    if (existingResIdx !== -1) {
+                        student.termlyResults[termIdx].results[existingResIdx].score = score;
+                        student.termlyResults[termIdx].results[existingResIdx].grade = grade;
+                    } else {
+                        student.termlyResults[termIdx].results.push({ subject, score, grade });
+                    }
                 } else {
-                    // Add new result
-                    student.results.push({ subject, score, grade });
+                    const existingResultIndex = student.results.findIndex(r => r.subject === subject);
+                    if (existingResultIndex !== -1) {
+                        student.results[existingResultIndex].score = score;
+                        student.results[existingResultIndex].grade = grade;
+                    } else {
+                        student.results.push({ subject, score, grade });
+                    }
                 }
 
                 await student.save();
@@ -600,15 +646,13 @@ app.post('/api/import-subject-results', uploadMemory.single('csv'), async (req, 
             }
         }
 
-        // Recalculate rankings for all affected classes
         for (const className of affectedClasses) {
-            await calculateClassRankings(className);
+            await calculateClassRankings(className, term, session);
         }
 
         res.json({
             success: true,
-            message: `Successfully updated ${updatedCount} students for subject '${subject}' and recalculated rankings for ${affectedClasses.size} classes.` +
-                (notFoundCount > 0 ? ` ${notFoundCount} students not found.` : ''),
+            message: `Successfully updated ${updatedCount} students and recalculated rankings.`,
             updatedCount,
             notFoundCount
         });

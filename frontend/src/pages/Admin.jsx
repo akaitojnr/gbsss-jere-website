@@ -37,6 +37,8 @@ const Admin = () => {
     const [studentSubTab, setStudentSubTab] = useState('list');
     const [importMode, setImportMode] = useState('subject'); // 'full' or 'subject'
     const [selectedSubject, setSelectedSubject] = useState('');
+    const [importTerm, setImportTerm] = useState('1st Term');
+    const [importSession, setImportSession] = useState('2025/2026');
 
     // Assignments States
     const [assignments, setAssignments] = useState([]);
@@ -1973,8 +1975,30 @@ const Admin = () => {
 
                 return (
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                             <h2 style={{ margin: 0 }}>Student & Result Management</h2>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <select 
+                                    value={importTerm} 
+                                    onChange={(e) => setImportTerm(e.target.value)}
+                                    style={{ ...styles.input, width: '150px' }}
+                                >
+                                    <option value="1st Term">1st Term</option>
+                                    <option value="2nd Term">2nd Term</option>
+                                    <option value="3rd Term">3rd Term</option>
+                                </select>
+                                <select 
+                                    value={importSession} 
+                                    onChange={(e) => setImportSession(e.target.value)}
+                                    style={{ ...styles.input, width: '150px' }}
+                                >
+                                    <option value="2024/2025">2024/2025</option>
+                                    <option value="2025/2026">2025/2026</option>
+                                    <option value="2026/2027">2026/2027</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '20px' }}>
                             <button
                                 onClick={() => {
                                     const link = `${window.location.origin}/check-result`;
@@ -1982,27 +2006,26 @@ const Admin = () => {
                                     alert('Link copied to clipboard: ' + link);
                                 }}
                                 className="btn"
-                                style={{ backgroundColor: '#17a2b8', color: 'white' }}
+                                style={{ backgroundColor: '#17a2b8', color: 'white', padding: '8px 16px' }}
                             >
-                                🔗 Copy Direct Result Link
+                                🔗 Copy Result Link
                             </button>
                             <button
                                 onClick={async () => {
                                     const studentClass = prompt('Enter class name to recalculate rankings (e.g., SS3 A) or leave blank for all students:');
-                                    // Note: Direct "all" isn't implemented in backend yet, so we'll do per unique class if blank
                                     const uniqueClasses = [...new Set(students.map(s => s.class))];
                                     const classesToProcess = studentClass ? [studentClass] : uniqueClasses;
                                     
-                                    setStudentStatus('Recalculating rankings...');
+                                    setStudentStatus(`Recalculating rankings for ${importTerm}, ${importSession}...`);
                                     try {
                                         for (const cls of classesToProcess) {
-                                            const res = await fetch(`${API_BASE_URL}/api/students/calculate-rankings/${encodeURIComponent(cls)}`, { method: 'POST' });
+                                            const res = await fetch(`${API_BASE_URL}/api/students/calculate-rankings/${encodeURIComponent(cls)}?term=${encodeURIComponent(importTerm)}&session=${encodeURIComponent(importSession)}`, { method: 'POST' });
                                             const data = await res.json();
                                             if (data.success && data.summary) {
                                                 console.log(`Rankings for ${cls}:`, data.summary);
                                             }
                                         }
-                                        alert('✅ Rankings recalculated successfully! Check the student list for updated positions.');
+                                        alert(`✅ Rankings recalculated successfully for ${importTerm} (${importSession})!`);
                                         fetchStudents();
                                     } catch (err) {
                                         alert('❌ Error recalculating rankings');
@@ -2010,9 +2033,9 @@ const Admin = () => {
                                     setStudentStatus('');
                                 }}
                                 className="btn"
-                                style={{ backgroundColor: '#28a745', color: 'white' }}
+                                style={{ backgroundColor: '#28a745', color: 'white', padding: '8px 16px' }}
                             >
-                                🔄 Recalculate Rankings
+                                🔄 Recalculate {importTerm} Rankings
                             </button>
                         </div>
 
@@ -2250,6 +2273,8 @@ const Admin = () => {
                                         setImportStatus('Importing...');
                                         const formData = new FormData();
                                         formData.append('csv', csvFile);
+                                        formData.append('term', importTerm);
+                                        formData.append('session', importSession);
 
                                         if (importMode === 'subject') {
                                             formData.append('subject', selectedSubject);

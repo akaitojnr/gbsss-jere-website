@@ -23,6 +23,9 @@ const StudentPortal = () => {
     const [timeLeft, setTimeLeft] = useState(0);
     const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
     const [assignmentAnswers, setAssignmentAnswers] = useState({});
+    const [selectedTerm, setSelectedTerm] = useState('1st Term');
+    const [selectedSession, setSelectedSession] = useState('2025/2026');
+    const [activeResult, setActiveResult] = useState(null);
     const { config } = useConfig();
 
     const handleAssignmentSubmit = async (a) => {
@@ -66,6 +69,12 @@ const StudentPortal = () => {
             const data = await response.json();
             if (data.success) {
                 setStudent(data.student);
+                const termData = data.student.termlyResults?.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
+                if (termData) {
+                    setActiveResult(termData);
+                } else {
+                    setActiveResult({ results: data.student.results || [], position: data.student.position || 'N/A' });
+                }
             } else {
                 setError(data.message || 'Login failed');
             }
@@ -81,6 +90,17 @@ const StudentPortal = () => {
             fetchDashboardData();
         }
     }, [student]);
+
+    useEffect(() => {
+        if (student) {
+            const termData = student.termlyResults?.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
+            if (termData) {
+                setActiveResult(termData);
+            } else {
+                setActiveResult({ results: student.results || [], position: student.position || 'N/A' });
+            }
+        }
+    }, [selectedTerm, selectedSession, student]);
 
     const fetchDashboardData = async () => {
         try {
@@ -266,8 +286,30 @@ const StudentPortal = () => {
                         </div>
 
                         <div style={{ marginTop: '40px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }} className="no-print">
-                                <h3>Academic Results</h3>
+                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '20px' }} className="no-print flex-responsive">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                    <h3>Academic Results</h3>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <select 
+                                            value={selectedTerm} 
+                                            onChange={(e) => setSelectedTerm(e.target.value)}
+                                            style={{ ...styles.input, width: '130px', padding: '8px' }}
+                                        >
+                                            <option value="1st Term">1st Term</option>
+                                            <option value="2nd Term">2nd Term</option>
+                                            <option value="3rd Term">3rd Term</option>
+                                        </select>
+                                        <select 
+                                            value={selectedSession} 
+                                            onChange={(e) => setSelectedSession(e.target.value)}
+                                            style={{ ...styles.input, width: '130px', padding: '8px' }}
+                                        >
+                                            <option value="2024/2025">2024/2025</option>
+                                            <option value="2025/2026">2025/2026</option>
+                                            <option value="2026/2027">2026/2027</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <button
                                     className="btn btn-primary"
                                     onClick={() => window.print()}
@@ -299,13 +341,13 @@ const StudentPortal = () => {
                                 </div>
 
                                 {/* Student Details Section */}
-                                <div style={styles.studentDetailsGrid}>
-                                    <div style={styles.detailItem}><strong>NAME:</strong> {student.name}</div>
+                                <div style={styles.studentDetailsGrid}>                                     <div style={styles.detailItem}><strong>NAME:</strong> {student.name}</div>
                                     <div style={styles.detailItem}><strong>REG NO:</strong> {student.regNumber}</div>
                                     <div style={styles.detailItem}><strong>CLASS:</strong> {student.class}</div>
-                                    <div style={styles.detailItem}><strong>TERM:</strong> {config.academics?.currentTerm || 'First Term'}</div>
-                                    <div style={styles.detailItem}><strong>SESSION:</strong> {config.academics?.currentSession || '2025/2026'}</div>
-                                    <div style={styles.detailItem}><strong>CLASS POSITION:</strong> {student.position || 'N/A'}</div>
+                                    <div style={styles.detailItem}><strong>TERM:</strong> {selectedTerm}</div>
+                                    <div style={styles.detailItem}><strong>SESSION:</strong> {selectedSession}</div>
+                                    <div style={styles.detailItem}><strong>CLASS POSITION:</strong> {activeResult?.position || 'N/A'}</div>
+
                                 </div>
 
                                 {/* Results Table */}
@@ -317,9 +359,8 @@ const StudentPortal = () => {
                                             <th style={styles.rth}>GRADE</th>
                                             <th style={styles.rth}>REMARKS</th>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {student.results.map((result, index) => (
+                                    </thead>                                     <tbody>
+                                        {activeResult?.results.map((result, index) => (
                                             <tr key={index}>
                                                 <td style={styles.rtd}><strong>{result.subject}</strong></td>
                                                 <td style={styles.rtd}>{result.score}</td>
@@ -328,18 +369,19 @@ const StudentPortal = () => {
                                             </tr>
                                         ))}
                                     </tbody>
-                                    <tfoot>
+                                     <tfoot>
                                         <tr style={{ background: '#f8f9fa' }}>
                                             <td style={styles.rtd}><strong>TOTAL SCORE:</strong></td>
-                                            <td style={styles.rtd}><strong>{student.results.reduce((sum, r) => sum + r.score, 0)}</strong></td>
+                                            <td style={styles.rtd}><strong>{activeResult?.results.reduce((sum, r) => sum + r.score, 0)}</strong></td>
                                             <td colSpan="2" style={styles.rtd}></td>
                                         </tr>
                                         <tr style={{ background: '#f8f9fa' }}>
                                             <td style={styles.rtd}><strong>AVERAGE:</strong></td>
-                                            <td style={styles.rtd}><strong>{(student.results.reduce((sum, r) => sum + r.score, 0) / student.results.length).toFixed(2)}%</strong></td>
+                                            <td style={styles.rtd}><strong>{(activeResult?.results.reduce((sum, r) => sum + r.score, 0) / (activeResult?.results.length || 1)).toFixed(2)}%</strong></td>
                                             <td colSpan="2" style={styles.rtd}></td>
                                         </tr>
                                     </tfoot>
+
                                 </table>
 
                                 {/* QR Code Authentication Section */}
@@ -347,8 +389,8 @@ const StudentPortal = () => {
                                     <div style={{ marginBottom: '10px', fontSize: '0.9rem', color: '#555' }}>
                                         <strong>Scan to Verify Authenticity</strong>
                                     </div>
-                                    <QRCodeSVG
-                                        value={`${window.location.origin}/verify?reg=${encodeURIComponent(student.regNumber)}`}
+                                     <QRCodeSVG
+                                        value={`${window.location.origin}/verify?reg=${encodeURIComponent(student.regNumber)}&term=${encodeURIComponent(selectedTerm)}&session=${encodeURIComponent(selectedSession)}`}
                                         size={100}
                                         level="H"
                                         includeMargin={false}

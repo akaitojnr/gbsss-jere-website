@@ -6,7 +6,10 @@ import { API_BASE_URL } from '../config';
 const CheckResult = () => {
     const [regNumber, setRegNumber] = useState('');
     const [password, setPassword] = useState('');
+    const [selectedTerm, setSelectedTerm] = useState('1st Term');
+    const [selectedSession, setSelectedSession] = useState('2025/2026');
     const [student, setStudent] = useState(null);
+    const [activeResult, setActiveResult] = useState(null);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { config } = useConfig();
@@ -26,6 +29,17 @@ const CheckResult = () => {
             const data = await response.json();
             if (data.success) {
                 setStudent(data.student);
+                // Find results for selected term/session
+                const termData = data.student.termlyResults?.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
+                if (termData) {
+                    setActiveResult(termData);
+                } else if (data.student.results && data.student.results.length > 0) {
+                    // Fallback to legacy if no term data found but legacy results exist
+                    setActiveResult({ results: data.student.results, position: data.student.position });
+                } else {
+                    setError(`No results found for ${selectedTerm} (${selectedSession})`);
+                    setStudent(null);
+                }
             } else {
                 setError(data.message || 'Login failed');
             }
@@ -93,9 +107,9 @@ const CheckResult = () => {
                         <div style={styles.detailItem}><strong>NAME:</strong> {student.name}</div>
                         <div style={styles.detailItem}><strong>REG NO:</strong> {student.regNumber}</div>
                         <div style={styles.detailItem}><strong>CLASS:</strong> {student.class}</div>
-                        <div style={styles.detailItem}><strong>TERM:</strong> {config.academics?.currentTerm || 'First Term'}</div>
-                        <div style={styles.detailItem}><strong>SESSION:</strong> {config.academics?.currentSession || '2025/2026'}</div>
-                        <div style={styles.detailItem}><strong>CLASS POSITION:</strong> {student.position || 'N/A'}</div>
+                        <div style={styles.detailItem}><strong>TERM:</strong> {selectedTerm}</div>
+                        <div style={styles.detailItem}><strong>SESSION:</strong> {selectedSession}</div>
+                        <div style={styles.detailItem}><strong>CLASS POSITION:</strong> {activeResult?.position || 'N/A'}</div>
                     </div>
 
                     <table style={styles.resultTable}>
@@ -108,7 +122,7 @@ const CheckResult = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {student.results.map((result, index) => (
+                            {activeResult?.results.map((result, index) => (
                                 <tr key={index}>
                                     <td style={styles.rtd}><strong>{result.subject}</strong></td>
                                     <td style={styles.rtd}>{result.score}</td>
@@ -118,14 +132,14 @@ const CheckResult = () => {
                             ))}
                         </tbody>
                         <tfoot>
-                            <tr style={{ background: '#f8f9fa' }}>
+                             <tr style={{ background: '#f8f9fa' }}>
                                 <td style={styles.rtd}><strong>TOTAL SCORE:</strong></td>
-                                <td style={styles.rtd}><strong>{student.results.reduce((sum, r) => sum + r.score, 0)}</strong></td>
+                                <td style={styles.rtd}><strong>{activeResult?.results.reduce((sum, r) => sum + r.score, 0)}</strong></td>
                                 <td colSpan="2" style={styles.rtd}></td>
                             </tr>
                             <tr style={{ background: '#f8f9fa' }}>
                                 <td style={styles.rtd}><strong>AVERAGE:</strong></td>
-                                <td style={styles.rtd}><strong>{(student.results.reduce((sum, r) => sum + r.score, 0) / student.results.length).toFixed(2)}%</strong></td>
+                                <td style={styles.rtd}><strong>{(activeResult?.results.reduce((sum, r) => sum + r.score, 0) / (activeResult?.results.length || 1)).toFixed(2)}%</strong></td>
                                 <td colSpan="2" style={styles.rtd}></td>
                             </tr>
                         </tfoot>
@@ -136,7 +150,7 @@ const CheckResult = () => {
                             <strong>Scan to Verify Authenticity</strong>
                         </div>
                         <QRCodeSVG
-                            value={`${window.location.origin}/verify?reg=${encodeURIComponent(student.regNumber)}`}
+                            value={`${window.location.origin}/verify?reg=${encodeURIComponent(student.regNumber)}&term=${encodeURIComponent(selectedTerm)}&session=${encodeURIComponent(selectedSession)}`}
                             size={100}
                             level="H"
                             includeMargin={false}
@@ -168,6 +182,32 @@ const CheckResult = () => {
                             required
                             style={styles.input}
                         />
+                    </div>
+                     <div style={{ display: 'flex', gap: '15px' }}>
+                        <div style={{ ...styles.formGroup, flex: 1 }}>
+                            <label style={styles.label}>Term</label>
+                            <select
+                                value={selectedTerm}
+                                onChange={(e) => setSelectedTerm(e.target.value)}
+                                style={styles.input}
+                            >
+                                <option value="1st Term">1st Term</option>
+                                <option value="2nd Term">2nd Term</option>
+                                <option value="3rd Term">3rd Term</option>
+                            </select>
+                        </div>
+                        <div style={{ ...styles.formGroup, flex: 1 }}>
+                            <label style={styles.label}>Session</label>
+                            <select
+                                value={selectedSession}
+                                onChange={(e) => setSelectedSession(e.target.value)}
+                                style={styles.input}
+                            >
+                                <option value="2024/2025">2024/2025</option>
+                                <option value="2025/2026">2025/2026</option>
+                                <option value="2026/2027">2026/2027</option>
+                            </select>
+                        </div>
                     </div>
                     <div style={styles.formGroup}>
                         <label style={styles.label}>Password</label>

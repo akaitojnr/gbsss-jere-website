@@ -8,9 +8,14 @@ const VerifyResult = () => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const regNumberParam = queryParams.get('reg') || '';
+    const termParam = queryParams.get('term') || '';
+    const sessionParam = queryParams.get('session') || '';
 
     const [regNumber, setRegNumber] = useState(regNumberParam);
+    const [selectedTerm, setSelectedTerm] = useState(termParam);
+    const [selectedSession, setSelectedSession] = useState(sessionParam);
     const [student, setStudent] = useState(null);
+    const [activeResult, setActiveResult] = useState(null);
     const [status, setStatus] = useState('idle'); // idle, loading, success, error
     const [errorMsg, setErrorMsg] = useState('');
 
@@ -18,7 +23,7 @@ const VerifyResult = () => {
         if (regNumberParam) {
             handleVerify(regNumberParam);
         }
-    }, [regNumberParam]);
+    }, [regNumberParam, selectedTerm, selectedSession]); // Added selectedTerm and selectedSession to dependencies
 
     const handleVerify = async (regToSearch) => {
         if (!regToSearch) return;
@@ -29,14 +34,30 @@ const VerifyResult = () => {
 
             if (data.success && data.student) {
                 setStudent(data.student);
+                if (selectedTerm && selectedSession && data.student.termlyResults) {
+                    const termData = data.student.termlyResults.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
+                    if (termData) {
+                        setActiveResult(termData);
+                    } else {
+                        // If specific term/session not found, show overall or an empty state for that term
+                        setActiveResult({ results: [], position: 'N/A' });
+                    }
+                } else {
+                    // If no term/session selected, show overall results
+                    setActiveResult({ results: data.student.results || [], position: data.student.position || 'N/A' });
+                }
                 setStatus('success');
             } else {
                 setStatus('error');
                 setErrorMsg(data.message || 'Student not found.');
+                setStudent(null);
+                setActiveResult(null);
             }
         } catch (err) {
             setStatus('error');
             setErrorMsg('Connection error verifying the result.');
+            setStudent(null);
+            setActiveResult(null);
         }
     };
 
@@ -85,9 +106,17 @@ const VerifyResult = () => {
                                 <p style={{ margin: '5px 0', color: '#666' }}>Registration Num</p>
                                 <strong style={{ fontSize: '1.2rem' }}>{student.regNumber}</strong>
                             </div>
-                            <div>
+                             <div>
                                 <p style={{ margin: '5px 0', color: '#666' }}>Class</p>
                                 <strong style={{ fontSize: '1.2rem' }}>{student.class}</strong>
+                            </div>
+                            <div>
+                                <p style={{ margin: '5px 0', color: '#666' }}>Term/Session</p>
+                                <strong style={{ fontSize: '1.2rem' }}>{selectedTerm || 'N/A'} ({selectedSession || 'N/A'})</strong>
+                            </div>
+                            <div>
+                                <p style={{ margin: '5px 0', color: '#666' }}>Class Position</p>
+                                <strong style={{ fontSize: '1.2rem' }}>{activeResult?.position || 'N/A'}</strong>
                             </div>
                             <div>
                                 <p style={{ margin: '5px 0', color: '#666' }}>Verification Date</p>
@@ -97,8 +126,8 @@ const VerifyResult = () => {
 
                         <h3 style={{ borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Academic Results</h3>
 
-                        {(!student.results || student.results.length === 0) ? (
-                            <p>No subject results recorded yet.</p>
+                        {(!activeResult?.results || activeResult.results.length === 0) ? (
+                            <p>No subject results recorded for this term/session.</p>
                         ) : (
                             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
                                 <thead>
@@ -109,7 +138,7 @@ const VerifyResult = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {student.results.map((r, i) => (
+                                     {activeResult?.results.map((r, i) => (
                                         <tr key={i}>
                                             <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}><strong>{r.subject}</strong></td>
                                             <td style={{ padding: '12px', borderBottom: '1px solid #eee' }}>{r.score}</td>
