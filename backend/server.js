@@ -494,6 +494,7 @@ app.put('/api/students/:regNumber', async (req, res) => {
         if (results !== undefined) student.results = results;
 
         await student.save();
+        console.log(`[Update Student] Student ${student.regNumber} updated. Results: ${student.results?.length || 0}, Termly: ${student.termlyResults?.length || 0}`);
         await calculateClassRankings(student.class);
         res.json({ success: true, message: 'Student updated successfully' });
     } catch (err) {
@@ -521,6 +522,7 @@ app.put('/api/students/:regNumber/toggle-block', async (req, res) => {
         if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
 
         student.isBlocked = !student.isBlocked;
+        console.log(`[Toggle Block] Student ${student.regNumber} (${student.name}) set to ${student.isBlocked}. Legacy results: ${student.results?.length || 0}, Termly entries: ${student.termlyResults?.length || 0}`);
         await student.save();
 
         res.json({ success: true, isBlocked: student.isBlocked, message: `Access ${student.isBlocked ? 'denied' : 'allowed'} for ${student.name}` });

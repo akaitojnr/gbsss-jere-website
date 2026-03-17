@@ -2472,7 +2472,13 @@ const Admin = () => {
                                                         <td style={styles.td}>{student.class}</td>
                                                         <td style={styles.td}>{student.results?.reduce((sum, r) => sum + (r.score || 0), 0) || 0}</td>
                                                         <td style={styles.td}><span style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>{student.position || 'N/A'}</span></td>
-                                                        <td style={styles.td}>{student.results?.length || 0} subjects</td>
+                                                        <td style={styles.td}>{student.results?.length || 0} subjects (Legacy)
+                                                            {student.termlyResults?.length > 0 && (
+                                                                <div style={{ fontSize: '0.8rem', color: 'var(--primary-color)', marginTop: '4px', fontWeight: 'bold' }}>
+                                                                    {student.termlyResults.length} termly records
+                                                                </div>
+                                                            )}
+</td>
                                                         <td style={styles.td}>
                                                             <button
                                                                 onClick={() => {
