@@ -726,6 +726,24 @@ const Admin = () => {
         }
     };
 
+    const toggleStudentBlock = async (regNumber) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/students/${encodeURIComponent(regNumber)}/toggle-block`, {
+                method: 'PUT'
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message);
+                fetchStudents();
+            } else {
+                alert('Failed to toggle block: ' + data.message);
+            }
+        } catch (err) {
+            console.error('Toggle block error:', err);
+            alert('Error connecting to server');
+        }
+    };
+
     return (
         <div className="container" style={{ padding: '60px 20px', maxWidth: '1200px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
@@ -741,7 +759,7 @@ const Admin = () => {
 
             {/* Tab Navigation */}
             <div style={styles.tabs}>
-                {['gallery', 'school', 'news', 'about', 'academics', 'admissions', 'pins', 'contact', 'messages', 'students', 'assignments', 'cbt', 'submissions', 'video-lessons'].map(tab => (
+                {['gallery', 'school', 'news', 'about', 'academics', 'admissions', 'pins', 'contact', 'messages', 'students', 'student-access', 'assignments', 'cbt', 'submissions', 'video-lessons'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -757,6 +775,7 @@ const Admin = () => {
                         {tab === 'contact' && 'Contact & Social'}
                         {tab === 'messages' && 'Messages'}
                         {tab === 'students' && 'Students & Results'}
+                        {tab === 'student-access' && 'Student Access'}
                         {tab === 'assignments' && 'Assignments'}
                         {tab === 'cbt' && 'CBT Exams'}
                         {tab === 'submissions' && 'Student Submissions'}
@@ -2507,6 +2526,72 @@ const Admin = () => {
                     </div>
                 );
             })()}
+            {/* Student Access Tab */}
+            {activeTab === 'student-access' && (
+                <div style={styles.card}>
+                    <h2>Student Access Control</h2>
+                    <p style={{ marginBottom: '20px', color: '#666' }}>
+                        Deny or allow students from accessing their results on the portal. 
+                        Blocked students will see a message to contact the administrator when trying to log in.
+                    </p>
+                    
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th style={styles.th}>Reg Number</th>
+                                    <th style={styles.th}>Name</th>
+                                    <th style={styles.th}>Class</th>
+                                    <th style={styles.th}>Access Status</th>
+                                    <th style={styles.th}>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {students.map((student) => (
+                                    <tr key={student.regNumber}>
+                                        <td style={styles.td}>{student.regNumber}</td>
+                                        <td style={styles.td}>{student.name}</td>
+                                        <td style={styles.td}>{student.class}</td>
+                                        <td style={styles.td}>
+                                            <span style={{ 
+                                                padding: '4px 8px', 
+                                                borderRadius: '4px', 
+                                                fontSize: '0.85rem',
+                                                fontWeight: 'bold',
+                                                backgroundColor: student.isBlocked ? '#ffebee' : '#e8f5e9',
+                                                color: student.isBlocked ? '#c62828' : '#2e7d32'
+                                            }}>
+                                                {student.isBlocked ? 'Blocked' : 'Allowed'}
+                                            </span>
+                                        </td>
+                                        <td style={styles.td}>
+                                            <button
+                                                onClick={() => toggleStudentBlock(student.regNumber)}
+                                                className="btn"
+                                                style={{ 
+                                                    backgroundColor: student.isBlocked ? '#28a745' : '#dc3545',
+                                                    color: 'white',
+                                                    padding: '6px 12px',
+                                                    fontSize: '0.9rem'
+                                                }}
+                                            >
+                                                {student.isBlocked ? 'Allow Access' : 'Deny Access'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {students.length === 0 && (
+                                    <tr>
+                                        <td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+                                            No students found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
 
             {/* Messages Tab */}
             {activeTab === 'messages' && (

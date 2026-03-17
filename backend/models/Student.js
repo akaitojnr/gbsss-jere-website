@@ -22,7 +22,8 @@ const studentSchema = new mongoose.Schema({
     position: { type: String, default: 'N/A' },
     results: [resultSchema],
     // New multi-term support
-    termlyResults: [termResultSchema]
+    termlyResults: [termResultSchema],
+    isBlocked: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Student', studentSchema);

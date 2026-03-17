@@ -396,6 +396,9 @@ app.post('/api/login', async (req, res) => {
     try {
         const student = await Student.findOne({ regNumber });
         if (student && student.password === password) {
+            if (student.isBlocked) {
+                return res.status(403).json({ success: false, message: 'Your access to results has been suspended. Please contact the school administrator.' });
+            }
             const { password: _, ...studentData } = student.toObject();
             res.json({ success: true, student: studentData });
         } else {
@@ -506,6 +509,24 @@ app.delete('/api/students/:regNumber', async (req, res) => {
         res.json({ success: true, message: 'Student deleted' });
     } catch (err) {
         res.status(500).json({ message: 'Delete failed' });
+    }
+});
+
+// Toggle Student Block Status
+app.put('/api/students/:regNumber/toggle-block', async (req, res) => {
+    await connectDB();
+    const { regNumber } = req.params;
+    try {
+        const student = await Student.findOne({ regNumber });
+        if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+
+        student.isBlocked = !student.isBlocked;
+        await student.save();
+
+        res.json({ success: true, isBlocked: student.isBlocked, message: `Access ${student.isBlocked ? 'denied' : 'allowed'} for ${student.name}` });
+    } catch (err) {
+        console.error('Toggle block error:', err);
+        res.status(500).json({ success: false, message: 'Server error during toggle' });
     }
 });
 
