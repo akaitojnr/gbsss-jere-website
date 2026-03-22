@@ -332,16 +332,17 @@ const calculateClassRankings = async (className, term, session) => {
                 resultsToSum = student.results || [];
             }
             const totalScore = resultsToSum.reduce((sum, res) => sum + (res.score || 0), 0);
-            return { id: student._id, student, totalScore, name: student.name };
+            const averageScore = resultsToSum.length > 0 ? (totalScore / resultsToSum.length) : 0;
+            return { id: student._id, student, totalScore, averageScore, name: student.name };
         });
 
-        // Sort by total score descending
-        studentScores.sort((a, b) => b.totalScore - a.totalScore);
+        // Sort by average score descending
+        studentScores.sort((a, b) => b.averageScore - a.averageScore);
 
         // Assign positions
         let currentRank = 1;
         for (let i = 0; i < studentScores.length; i++) {
-            if (i > 0 && studentScores[i].totalScore < studentScores[i - 1].totalScore) {
+            if (i > 0 && studentScores[i].averageScore < studentScores[i - 1].averageScore) {
                 currentRank = i + 1;
             }
 
@@ -369,7 +370,7 @@ const calculateClassRankings = async (className, term, session) => {
                 );
             }
             
-            summary.updates.push({ name: studentScores[i].name, position: positionString, score: studentScores[i].totalScore });
+            summary.updates.push({ name: studentScores[i].name, position: positionString, score: studentScores[i].totalScore, average: studentScores[i].averageScore.toFixed(2) });
         }
         console.log(`Rankings updated for ${className} ${term || ''} ${session || ''}`);
         return { ...summary, success: true };
