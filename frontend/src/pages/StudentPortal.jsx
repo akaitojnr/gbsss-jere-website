@@ -70,10 +70,9 @@ const StudentPortal = () => {
             if (data.success) {
                 setStudent(data.student);
                 const termData = data.student.termlyResults?.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
-                const hasTermlyResults = data.student.termlyResults && data.student.termlyResults.length > 0;
                 if (termData) {
                     setActiveResult(termData);
-                } else if (!hasTermlyResults && selectedTerm === '1st Term') {
+                } else if (selectedTerm === '1st Term') {
                     setActiveResult({ results: data.student.results || [], position: data.student.position || 'N/A' });
                 } else {
                     setActiveResult({ results: [], position: 'N/A' });
@@ -97,10 +96,9 @@ const StudentPortal = () => {
     useEffect(() => {
         if (student) {
             const termData = student.termlyResults?.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
-            const hasTermlyResults = student.termlyResults && student.termlyResults.length > 0;
             if (termData) {
                 setActiveResult(termData);
-            } else if (!hasTermlyResults && selectedTerm === '1st Term') {
+            } else if (selectedTerm === '1st Term') {
                 setActiveResult({ results: student.results || [], position: student.position || 'N/A' });
             } else {
                 setActiveResult({ results: [], position: 'N/A' });
