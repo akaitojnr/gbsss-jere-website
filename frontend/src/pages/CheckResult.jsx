@@ -31,9 +31,10 @@ const CheckResult = () => {
                 setStudent(data.student);
                 // Find results for selected term/session
                 const termData = data.student.termlyResults?.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
+                const hasTermlyResults = data.student.termlyResults && data.student.termlyResults.length > 0;
                 if (termData) {
                     setActiveResult(termData);
-                } else if (data.student.results && data.student.results.length > 0) {
+                } else if (!hasTermlyResults && selectedTerm === '1st Term' && data.student.results && data.student.results.length > 0) {
                     // Fallback to legacy if no term data found but legacy results exist
                     setActiveResult({ results: data.student.results, position: data.student.position });
                 } else {

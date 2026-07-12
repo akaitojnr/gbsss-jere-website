@@ -70,10 +70,13 @@ const StudentPortal = () => {
             if (data.success) {
                 setStudent(data.student);
                 const termData = data.student.termlyResults?.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
+                const hasTermlyResults = data.student.termlyResults && data.student.termlyResults.length > 0;
                 if (termData) {
                     setActiveResult(termData);
-                } else {
+                } else if (!hasTermlyResults && selectedTerm === '1st Term') {
                     setActiveResult({ results: data.student.results || [], position: data.student.position || 'N/A' });
+                } else {
+                    setActiveResult({ results: [], position: 'N/A' });
                 }
             } else {
                 setError(data.message || 'Login failed');
@@ -94,10 +97,13 @@ const StudentPortal = () => {
     useEffect(() => {
         if (student) {
             const termData = student.termlyResults?.find(tr => tr.term === selectedTerm && tr.session === selectedSession);
+            const hasTermlyResults = student.termlyResults && student.termlyResults.length > 0;
             if (termData) {
                 setActiveResult(termData);
-            } else {
+            } else if (!hasTermlyResults && selectedTerm === '1st Term') {
                 setActiveResult({ results: student.results || [], position: student.position || 'N/A' });
+            } else {
+                setActiveResult({ results: [], position: 'N/A' });
             }
         }
     }, [selectedTerm, selectedSession, student]);
@@ -351,38 +357,44 @@ const StudentPortal = () => {
                                 </div>
 
                                 {/* Results Table */}
-                                <table style={styles.resultTable}>
-                                    <thead>
-                                        <tr>
-                                            <th style={styles.rth}>SUBJECT</th>
-                                            <th style={styles.rth}>TOTAL (100)</th>
-                                            <th style={styles.rth}>GRADE</th>
-                                            <th style={styles.rth}>REMARKS</th>
-                                        </tr>
-                                    </thead>                                     <tbody>
-                                        {activeResult?.results.map((result, index) => (
-                                            <tr key={index}>
-                                                <td style={styles.rtd}><strong>{result.subject}</strong></td>
-                                                <td style={styles.rtd}>{result.score}</td>
-                                                <td style={styles.rtd}>{result.grade}</td>
-                                                <td style={styles.rtd}>{getRemark(result.grade)}</td>
+                                {!activeResult?.results || activeResult.results.length === 0 ? (
+                                    <div style={{ padding: '30px', textAlign: 'center', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px dashed #ccc', margin: '20px 0' }}>
+                                        <p style={{ margin: 0, color: '#666', fontStyle: 'italic' }}>No results recorded for this term/session.</p>
+                                    </div>
+                                ) : (
+                                    <table style={styles.resultTable}>
+                                        <thead>
+                                            <tr>
+                                                <th style={styles.rth}>SUBJECT</th>
+                                                <th style={styles.rth}>TOTAL (100)</th>
+                                                <th style={styles.rth}>GRADE</th>
+                                                <th style={styles.rth}>REMARKS</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                     <tfoot>
-                                        <tr style={{ background: '#f8f9fa' }}>
-                                            <td style={styles.rtd}><strong>TOTAL SCORE:</strong></td>
-                                            <td style={styles.rtd}><strong>{activeResult?.results.reduce((sum, r) => sum + r.score, 0)}</strong></td>
-                                            <td colSpan="2" style={styles.rtd}></td>
-                                        </tr>
-                                        <tr style={{ background: '#f8f9fa' }}>
-                                            <td style={styles.rtd}><strong>AVERAGE:</strong></td>
-                                            <td style={styles.rtd}><strong>{(activeResult?.results.reduce((sum, r) => sum + r.score, 0) / (activeResult?.results.length || 1)).toFixed(2)}%</strong></td>
-                                            <td colSpan="2" style={styles.rtd}></td>
-                                        </tr>
-                                    </tfoot>
-
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {activeResult.results.map((result, index) => (
+                                                <tr key={index}>
+                                                    <td style={styles.rtd}><strong>{result.subject}</strong></td>
+                                                    <td style={styles.rtd}>{result.score}</td>
+                                                    <td style={styles.rtd}>{result.grade}</td>
+                                                    <td style={styles.rtd}>{getRemark(result.grade)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style={{ background: '#f8f9fa' }}>
+                                                <td style={styles.rtd}><strong>TOTAL SCORE:</strong></td>
+                                                <td style={styles.rtd}><strong>{activeResult.results.reduce((sum, r) => sum + r.score, 0)}</strong></td>
+                                                <td colSpan="2" style={styles.rtd}></td>
+                                            </tr>
+                                            <tr style={{ background: '#f8f9fa' }}>
+                                                <td style={styles.rtd}><strong>AVERAGE:</strong></td>
+                                                <td style={styles.rtd}><strong>{(activeResult.results.reduce((sum, r) => sum + r.score, 0) / (activeResult.results.length || 1)).toFixed(2)}%</strong></td>
+                                                <td colSpan="2" style={styles.rtd}></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                )}
 
                                 {/* QR Code Authentication Section */}
                                 <div style={{ marginTop: '30px', textAlign: 'center' }}>
@@ -829,18 +841,6 @@ const styles = {
         margin: '0 0 5px 0',
         fontSize: '0.9rem',
         color: '#555',
-    },
-    rth: {
-        border: '1px solid #333',
-        padding: '4px',
-        fontSize: '0.8rem',
-        textAlign: 'center',
-    },
-    rtd: {
-        border: '1px solid #333',
-        padding: '4px',
-        fontSize: '0.8rem',
-        textAlign: 'center',
     },
     reportTitle: {
         textAlign: 'center',
